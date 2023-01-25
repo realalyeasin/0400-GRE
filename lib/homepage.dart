@@ -1,3 +1,4 @@
+import 'package:final_project/practice.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,7 +13,35 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    var s =0.obs;
+    var word = [
+      'Abridge',
+      'Abstain',
+      'Abstract',
+      'Abundant',
+      'Accentuate',
+      'Acclaim',
+      'Acclaim',
+      'Accommodating',
+      'Accord',
+      'Acute',
+      'Adept',
+      'Adequate',
+    ];
+    var mean = [
+      ['to shorten','v'],
+      ['to shorten','v'],
+      ['to shorten','v'],
+      ['to shorten','v'],
+      ['to shorten','v'],
+      ['to shorten','v'],
+      ['to shorten','v'],
+      ['to shorten','v'],
+      ['to shorten','v'],
+      ['','aa'],
+      ['','aa'],
+      ['']
+    ];
+    var invest;
     return Scaffold(
       backgroundColor: Color.fromRGBO(226, 192, 235, 1),
         appBar: AppBar(
@@ -31,12 +60,11 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(height: 15,),
                 Text('High Frequency Words'),
                 SizedBox(height: 15,),
-                Text('Practice Session'),
+                GestureDetector(onTap: (){Get.to(()=>Practice());},child: Text('Practice Session')),
                 SizedBox(height: 15,),
                 Text('Feedback'),
                 SizedBox(height: 15,),
                 Text('Contact Us'),
-
               ],
             ),
           ),
@@ -67,22 +95,14 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: ListView.builder(
                 shrinkWrap: true,
-                  itemCount: 50,
+                  itemCount: word.length,
                   itemBuilder: (context, index){
                     return
                        Padding(
                         padding: const EdgeInsets.only(left: 15, right: 15,bottom: 7),
                         child: GestureDetector(
                           onTap: (){
-                            print('got it');
-                            Get.defaultDialog(title: '$index', content: Column(
-                              children:  [
-                                const Text('Guess the word meaning'),
-                                ElevatedButton(onPressed: (){
-                                 Get.to(()=>const MeaningPage());
-                                }, child: Text('Show'))
-                              ],
-                            ));
+                            invest = index;
                           },
                           child: Container(
                               height: 45,
@@ -95,9 +115,8 @@ class _HomePageState extends State<HomePage> {
                                     child: Text((index+1).toString(),style: TextStyle(color: Colors.black),)
                                   )],),
                                   Row(
-                                    children: const [
-                                      Text('Abc word... ',style: TextStyle(color: Colors.black),),
-                                      Text('Meaning...',style: TextStyle(color: Colors.black))
+                                    children:  [
+                                      Text(word[index],style: TextStyle(color: Colors.black),),
                                     ],
                                   ),
                                   Row(children: [
@@ -108,9 +127,45 @@ class _HomePageState extends State<HomePage> {
                         )
                     );
                   }),
-            )
+            ),
+            Container(
+              height: (MediaQuery.of(context).size.height/100)*23,
+              width: MediaQuery.of(context).size.width-10,
+              decoration: BoxDecoration(color: Color.fromRGBO(108, 168, 247, 1),border: Border.all(color: Colors.black,width: 4),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))
+            ),child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(height: 3.3,color: Colors.black,),
+                  SizedBox(height: 3,),
+                  Container(height: 3,width:MediaQuery.of(context).size.width-50,color: Colors.black,),
+                  Column(
+                    children: [
+                      SizedBox(height: 7,),
+                      Text('Abridge - To Shoten',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                      SizedBox(height: 4,),
+                      Text('We need to abridge the papers in order to make it concise',style: TextStyle(fontSize: 14),),
+                      SizedBox(height: 7,),
+                      Text('Synonym - compress, diminish, epitomize'),
+                      Text('Antonym - enlarge, lengthen, expand'),
+                      SizedBox(height: 8,),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                        Text('POS - V.'),
+                        SizedBox(width: 10,),
+                        Text('Frequency - 4.2'),
+                      ],)
+                    ],
+                  )
+                ],
+              ),
+            ),)
           ],
         ),
     );
   }
 }
+
