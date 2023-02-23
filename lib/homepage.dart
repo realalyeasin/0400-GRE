@@ -48,7 +48,8 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Color.fromRGBO(186, 13, 128, 1),
           centerTitle: true,
           title: const Text('GRE Vocabulary',),),
-        drawer: Drawer(
+      floatingActionButton: FloatingActionButton(onPressed: () {  },backgroundColor: Colors.black,child: Text('ADD'),),
+      drawer: Drawer(
           child: Container(
             child: Column(
               children: [
