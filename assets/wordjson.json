@@ -1,0 +1,68 @@
+[
+  {
+    "id": 0,
+    "word": "alacrity",
+    "meaning": "Liveliness and eagerness",
+    "example": "he accepted with alacrity",
+    "syn": "briskness",
+    "ant": "apathy",
+    "pos": "noun",
+    "freq": 5,
+    "fvrt": 0
+  },
+  {
+    "id": 1,
+    "word": "buck",
+    "meaning": "Resist",
+    "example": "buck the trend",
+    "syn": "go against",
+    "ant": "succumb to",
+    "pos": "verb",
+    "freq": 4,
+    "fvrt": 0
+  },
+  {
+    "id": 2,
+    "word": "chortle",
+    "meaning": "Laugh quietly",
+    "example": "Merry chortled suddenly",
+    "syn": "chuckle",
+    "ant": "clamouring",
+    "pos": "verb",
+    "freq": 2,
+    "fvrt": 0
+  },
+  {
+    "id": 3,
+    "word": "doughty",
+    "meaning": "Bold",
+    "example": "The doughty soldier faced the oncoming enemy",
+    "syn": "hardy",
+    "ant": "timid",
+    "pos": "adj",
+    "freq": 1,
+    "fvrt": 0
+  },
+  {
+    "id": 4,
+    "word": "flummox",
+    "meaning": "bewilder",
+    "example": "These questions flummox even the experts",
+    "syn": "confound",
+    "ant": "aware",
+    "pos": "verb",
+    "freq": 4,
+    "fvrt": 0
+  },
+  {
+    "id": 5,
+    "word": "impute",
+    "meaning": "attribute",
+    "example": "People impute great cleverness to cats",
+    "syn": "assign",
+    "ant": "absolve",
+    "pos": "verb",
+    "freq": 3,
+    "fvrt": 0
+  }
+]
