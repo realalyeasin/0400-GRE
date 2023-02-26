@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:final_project/database/sql_helper.dart';
+import 'package:final_project/model/word_model.dart';
+import 'package:final_project/views/search_page.dart';
 import 'package:sqflite/sqflite.dart' as sql;
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +37,16 @@ class _ReadCSVState extends State<ReadCSV> {
     print("initState Called");
     loadAsset();
     createDB();
+    ReadJSON();
+    loadJsonData();
     print('Loaded');
+  }
+
+  loadJsonData() async {
+    List<WordClass> wordClass = await ReadJSON();
+    print('111');
+    print(wordClass[3].meaning);
+    return wordClass;
   }
 
   loadAsset() async {
@@ -66,17 +77,28 @@ class _ReadCSVState extends State<ReadCSV> {
         fvrt INTEGER)""");
 
       Batch batch = db.batch();
-      final wordJson = await rootBundle.rootBundle.loadString('assets/wordjson.json');
+      final wordJson =
+          await rootBundle.rootBundle.loadString('assets/wordjson.json');
       final wordList = json.decode(wordJson) as List<dynamic>;
       wordList.forEach((val) {
         WordClass word = WordClass.fromMap(val);
         batch.insert(words, word.toMap());
         print(wordList);
+
         print('WORDLIST');
       });
 
       batch.commit();
     });
+  }
+
+  Future<List<WordClass>> ReadJSON() async {
+    final jsonData =
+        await rootBundle.rootBundle.loadString('assets/wordjson.json');
+    final list = jsonDecode(jsonData) as List<dynamic>;
+    print(list);
+    print("////////////////");
+    return list.map((e) => WordClass.fromJson(e)).toList();
   }
 
   Widget build(BuildContext context) {
@@ -142,24 +164,30 @@ class _ReadCSVState extends State<ReadCSV> {
         ),
       ),
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.black),
-        backgroundColor: Colors.white,
-        title: const Text(
-          'GRE Vocabularies',
-          style: TextStyle(
-              fontStyle: FontStyle.italic,
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2),
-        ),
-      ),
+          iconTheme: IconThemeData(color: Colors.black),
+          backgroundColor: Colors.white,
+          title: const Text(
+            'GRE Vocabularies',
+            style: TextStyle(
+                fontStyle: FontStyle.italic,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2),
+          ),
+          actions: [
+            // Navigate to the Search Screen
+            IconButton(
+                onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SearchPage())),
+                icon: const Icon(Icons.search))
+          ]),
       body: Column(
         children: [
           Obx(() => loadDone.isTrue
               ? Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Container(
-                    height: 200,
+                    height: 190,
                     width: 400,
                     decoration: BoxDecoration(
                         border: Border.all(color: Colors.black, width: 3),
@@ -212,13 +240,14 @@ class _ReadCSVState extends State<ReadCSV> {
             () => SingleChildScrollView(
                 child: loadDone.isTrue
                     ? Container(
-                        height: MediaQuery.of(context).size.height - 315,
+                        height: MediaQuery.of(context).size.height - 320,
                         child: ListView.builder(
                             shrinkWrap: true,
                             itemCount: data.length,
                             itemBuilder: (_, index) {
                               return Padding(
-                                  padding: const EdgeInsets.only(left: 10,right: 10,top: 8,bottom: 8),
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10, top: 8, bottom: 8),
                                   child: GestureDetector(
                                     onTap: () {
                                       setState(() {
@@ -233,7 +262,9 @@ class _ReadCSVState extends State<ReadCSV> {
                                       decoration: BoxDecoration(
                                           border: Border.all(
                                               color: Colors.black, width: 3),
-                                          color: tappedListIndex == index? Color.fromRGBO(126, 212, 230, 1) :Colors.yellowAccent.shade700,
+                                          color: tappedListIndex == index
+                                              ? Color.fromRGBO(126, 212, 230, 1)
+                                              : Colors.yellowAccent.shade700,
                                           borderRadius:
                                               BorderRadius.circular(8)),
                                       // color: isSelected
@@ -242,13 +273,13 @@ class _ReadCSVState extends State<ReadCSV> {
                                       child: GestureDetector(
                                         onTap: () {
                                           isSelected = true;
-                                            setState(() {
-                                              inx = index.obs;
-                                              tappedListIndex = index;
-                                              print(inx);
-                                              print(data[inx.value][3].toString());
-                                            });
-
+                                          setState(() {
+                                            inx = index.obs;
+                                            tappedListIndex = index;
+                                            print(inx);
+                                            print(
+                                                data[inx.value][3].toString());
+                                          });
                                         },
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
@@ -299,8 +330,7 @@ class _ReadCSVState extends State<ReadCSV> {
                                                   },
                                                   child: Container(
                                                     child: Icon(
-                                                      Icons
-                                                          .favorite,
+                                                      Icons.favorite,
                                                       color: favorite.isTrue &&
                                                               tappedIndex ==
                                                                   index
