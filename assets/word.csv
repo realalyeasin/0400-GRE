@@ -1,7 +1,52 @@
-id,word,meaning,example,syn,ant,pos,freq,fvrt,
-0,alacrity,Liveliness and eagerness,he accepted with alacrity,briskness,apathy,noun,5,0,
-1,buck,Resist,buck the trend,go against,succumb to,verb,4,0,
-2,chortle,Laugh quietly,Merry chortled suddenly,chuckle,clamouring,verb,2,0,
-3,doughty,Bold,The doughty soldier faced the oncoming enemy,hardy,timid,adj,1,0,
-4,flummox,bewilder,These questions flummox even the experts,confound,aware,verb,4,0,
-5,impute,attribute,People impute great cleverness to cats,assign,absolve,verb,3,0,
+id,word,meaning,example,syn,ant,pos,freq,fvrt
+0,Ambivalence,Lack of Clarity,the lesson was fully ambivalant,being undecided,unperspective,adj,5,0
+1,Cantankerous,"bad-tempered,quarrelsome",old cantankerous lawer bargaining over laws,ill-mannered,decorous,adj,4,0
+2,Derogatory,uncomplimentary,his derogative attitude insulted her,scold,appraise,adj,3,0
+3,Exemplify,good example ,you exemplified with your result,illustrate,not exemplified,adj,2,0
+4,bevy,large group,he was surrounded by a bevy of beauties in bathing attire,flock,contingent,noun,1,0
+5,Bicameral,consisting of two chambers,the bicameral heart of a fish,two-chambered,one sided,adj,5,0
+6,Bicker,quarrel,Let's not quibble over pennies,"pettifoggery, squabble",peace,noun,4,0
+7,Bifurcated,divided into two branches,socially bifurcated populations,bichameral,one sided,adj,3,0
+8,bivouac,temporary ,bivouac items dont last long,not lasting,long lasting,noun,2,0
+9,Lucid,clear,Lucid dream,Unequivocal,Opaque,noun,1,0
+10,Ornate,highly decorated,the building is ornated beautifully,studied,not well suit,adj,5,0
+11,Precipice,steep slope,precipiced calculation that will not applicable everywhere ,steep,even,adj,4,0
+12,Salubrious,health-giving,he is very salubrious,promoting health,not aware of health,noun,3,0
+13,Truant,shirker,truant sweaters are not good looking to wear,short,lengthy,adj,2,0
+14,Ambulatory,able to walk around,it gives relief that he is ambulatoring,move,still,adj,1,0
+15,Capacious,spacious,the floor is not capacious,enough room,lack of space,adj,5,0
+16,Desecrate,pollute a holy place ,make him desecrate,spoil,sacred,verb,4,0
+17,Exhaustive,complete and thorough,exhaustive syllabus,wholly,partially,adj,3,0
+18,Impious,wicked,his intention is clearly impious,evil,sacred,adj,2,0
+19,Ludicrous,ridiculous,the politician was ludicrous in his speech,deride,praise,adj,1,0
+20,Orthodox,conventional,he grew up in orthodox place,ritual,unorthodox,noun,5,0
+21,Precipitous,done in a hurry,she walks precipitously,hasty,slow,adj,4,0
+22,Salutary,beneficial,the program was salutary,helpful,bad,adj,3,0
+23,Truncate,cut short,truncuate the lenthy lecture,cut,join,verb,2,0
+24,Ameliorate,make better ,its better that the situation has been ameliorated,improve,worse,verb,1,0
+25,Capitulate,surrender,the theft capitulated,give up,stringent,verb,5,0
+26,Desecration,spoiling,desecration of the Holy Sabbath,blasphemy,undesecrate,noun,4,0
+27,Exonerates,absolves; removes blame,The suspect was exonerated,vindicate,put blame on,verb,3,0
+28,Impoverished,destitute,the impoverished fortunes of the family,indigent,rich,adj,2,0
+29,Lukewarm,unenthusiastic,he hates lukewarm coffee,tepid,enthusiastic,adj,1,0
+30,Ossify,become fixed and rigid,The tissue ossified,petrify,soften,verb,5,0
+31,Preclude,make impossible,the precluded my motivation,prevent,eeccelerate,verb,4,0
+32,Sanctimonious,hypocritically holy,a sickening sanctimonious smile,pharisaic,evil,adj,3,0
+33,Tumult,uproar; noise,Violent tumult out there,garboil,halcyon,noun,2,0
+34,Amelioration,improvement,The act of relieving ills,alleviate,exasarbate,noun,1,0
+35,Carping,constant criticism,he is carping all day long,blaming,praising,verb,5,0
+36,Desist,stop,I desist from alcohol,abstain,stick,verb,4,0
+37,Exorcism,getting free,Freeing from evil spirits,holy,omnious,noun,3,0
+38,Impromptu,unrehearsed,an impromptu speech,extempore,preparation,adj,2,0
+39,Lummox,clumsy person,An awkward stupid person,goon,vivid,noun,1,0
+40,Ostentatious,showy,an ostentatious sable coat,pretentious,sober,adj,5,0
+41,Precocious,developing early,a precocious child,early,delay,adj,4,0
+42,Sanction,give approval to,I will sanction his educational policies,approve,disapprove,verb,3,0
+43,Turpitude,depravity,"its brothels, its opium parlors, its depravity",corrupt,,noun,2,0
+44,Amiable,friendly,his family is amiable,affable,hostile,noun,1,0
+45,Cartographer,person who makes maps,he is a nice cartographer,map maker,not map maker,noun,5,0
+46,Despondent,miserable,I am seeing your despondent life from long ago,heartsick,vivid,noun,4,0
+47,Expatriate,refugee,govt expatriated many people,exile,native,verb,3,0
+48,Inadvertent,not intentional,we did it inadvertently,accidental,heed,adj,2,0
+49,Luscious,juicy,the silk looks luscious,delish,not delish,adj,1,0
+50,Oust,push out of a position ,you ousted me from everyone,expel,hiring,verb,5,0

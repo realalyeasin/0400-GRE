@@ -68,7 +68,7 @@ class WordList extends StatelessWidget {
                 )),
           ),
           onDismissed: (direction) {
-            wordOperations?.deleteContact(wordModel![index]!);
+            wordOperations?.deleteContact(wordModel[index]!);
           },
         );
       },

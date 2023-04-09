@@ -9,8 +9,8 @@ class SearchPage extends StatefulWidget {
   SearchPage({
     Key? key,
   }) : super(
-    key: key,
-  );
+          key: key,
+        );
 
   @override
   _SearchPageState createState() => _SearchPageState();
@@ -46,9 +46,7 @@ class _SearchPageState extends State<SearchPage> {
                       border: OutlineInputBorder(), labelText: 'keyword'),
                   onChanged: (value) {
                     keyword = value;
-                    setState(() {
-
-                    });
+                    setState(() {});
                   },
                 ),
               ),
@@ -57,7 +55,11 @@ class _SearchPageState extends State<SearchPage> {
                 builder: (context, snapshot) {
                   if (snapshot.hasError) print('error');
                   var data = snapshot.data;
-                  return snapshot.hasData ? WordList(data as List<WordModel>) : new Center(child: Text('No contacts that include this keyword'),);
+                  return snapshot.hasData
+                      ? WordList(data as List<WordModel>)
+                      : new Center(
+                          child: Text('No contacts that include this keyword'),
+                        );
                 },
               ),
             ],

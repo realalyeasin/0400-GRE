@@ -51,6 +51,11 @@ dev_dependencies:
   intl:
   csv:
   sort:
+  provider:
+  flip_card:
+  dotted_line:
+  flutter_star: ^1.2.0
+  get_storage: ^2.1.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
