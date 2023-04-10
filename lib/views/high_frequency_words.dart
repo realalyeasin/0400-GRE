@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' as rootBundle;
+import '../main.dart';
 import '../model/model.dart';
 import 'package:get/get.dart';
 
@@ -35,11 +36,19 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
         await rootBundle.rootBundle.loadString('assets/wordjson.json');
     final data = await json.decode(response);
 
+
+
+
+
     setState(() {
       _items = List<WordClass>.from(data.map((e) {
         return WordClass.fromJson(e as Map<String, dynamic>);
       }));
     });
+
+
+
+
     sort();
     if (sortDone == true) {
       _filter();

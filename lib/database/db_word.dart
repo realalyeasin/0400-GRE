@@ -18,21 +18,20 @@ class GREDatabase {
   static const freq = 'freq';
   static const fvrt = 'fvrt';
 
-  Database? _db;
+
   late int updateId;
   late String updateIt;
-  Future<void> init() async {
+  Database? _db;
+
+  Future<void> initDatabase() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, _databaseName);
-    _db = await openDatabase(
-      path,
-      version: _databaseVersion,
-      onCreate: _onCreate,
-    );
+    _db = await openDatabase(path,
+        version: _databaseVersion, onCreate: populateDatabase);
   }
 
-  Future _onCreate(Database db, int version) async {
-    await db.execute('''
+  Future populateDatabase(Database database, int version) async {
+    await database.execute('''
           CREATE TABLE $table (
             $id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             $word TEXT,
@@ -49,22 +48,36 @@ class GREDatabase {
     return await _db?.insert(table, row);
   }
 
+  Future<int?> insertToDb(WordClass wordClass) async {
+    var result = await _db?.insert("word", wordClass.toMap());
+    return result;
+  }
+
+  insertRaw(WordClass wordClass) async {
+    var result = await _db?.rawInsert(
+        "INSERT INTO $table ($id, $word, $meaning, $example, $syn, $ant, $pos, $freq, $fvrt)"
+        " VALUES (${wordClass.id}, '${wordClass.word}', '${wordClass.meaning}', '${wordClass.example}', '${wordClass.syn}', '${wordClass.ant}', '${wordClass.pos}', '${wordClass.freq}', '${wordClass.fvrt})");
+    return result;
+  }
+
   Future<List<Map<String, dynamic>>?> queryAllRows() async {
     return await _db?.query(table);
   }
 
-  Future<int> queryRowCount() async {
-    final results = await _db?.rawQuery('SELECT COUNT(*) FROM $table');
-    return Sqflite.firstIntValue(results) ?? 0;
-  }
+  // Future<int> queryRowCount() async {
+  //   final results = await _db?.rawQuery('SELECT COUNT(*) FROM $table');
+  //   return Sqflite.firstIntValue(results!) ?? 0;
+  // }
   Future getData() async {
+    var result = await _db?.rawQuery('SELECT * FROM $table');
+    print('data is $result');
+    return result?.toList();
 
-    final List<Map<String, Object?>> datas = await _db!.query(GREDatabase.table);
-
-print(datas);
-
-    return datas.map((e) => WordClass.fromMap(e)).toList();
+    // Get the records
+    final List<Map<String, Object?>>? datas = await _db?.query(table);
+    return datas?.map((e) => WordClass.fromMap(e)).toList();
   }
+
   // Future<int> update(updateId) async {
   //   return await _db.update(
   //     table,

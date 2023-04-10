@@ -1,21 +1,16 @@
-import 'package:final_project/Global_Variables/constants.dart';
-import 'package:final_project/database/db_word.dart';
 import 'package:final_project/views/add_word.dart';
 import 'package:final_project/views/readcsv.dart';
 import 'package:final_project/views/search_word.dart';
 import 'package:final_project/views/word_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import 'database/sql_helper.dart';
-import 'homepage.dart';
 
+import 'database/db_helpers.dart';
+
+final dbHelper = DatabaseHelper();
 Future<void> main() async {
-  final gredb = GREDatabase();
-  await GetStorage.init(Constants.createDataBox);
-
   WidgetsFlutterBinding.ensureInitialized();
-  await gredb.init();
+  await dbHelper.init();
   runApp(const MyApp());
 }
 

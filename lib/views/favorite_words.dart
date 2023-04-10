@@ -1,6 +1,5 @@
 import 'dart:convert';
-
-import 'package:final_project/Global_Variables/constants.dart';
+import 'package:final_project/database/db_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/services.dart' as rootBundle;
@@ -17,12 +16,14 @@ class FavoriteWords extends StatefulWidget {
 }
 
 class _FavoriteWordsState extends State<FavoriteWords> {
+  Future fetchDataFromDB() => fetchFavFromDB();
   List<WordClass> _items = [];
   List<WordClass> sorted = [];
   List<WordClass> HF = [];
   List<WordClass> MF = [];
   List<WordClass> LF = [];
   var inx = 0.obs;
+  bool isFav = true;
   var isSelected = false;
   var favorite = false.obs;
   var listIndex = 0.obs;
@@ -37,7 +38,7 @@ class _FavoriteWordsState extends State<FavoriteWords> {
 
   Future<void> readJson() async {
     final String response =
-    await rootBundle.rootBundle.loadString('assets/wordjson.json');
+        await rootBundle.rootBundle.loadString('assets/wordjson.json');
     final data = await json.decode(response);
 
     setState(() {
@@ -59,12 +60,6 @@ class _FavoriteWordsState extends State<FavoriteWords> {
     // MF = sorted;
     print(sorted[0].freq);
     sortDone = true;
-  }
-  update(){
-    setState(() {
-      listIndex = 0.obs;
-    });
-    listIndex = 0.obs;
   }
 
   void _filter() {
@@ -92,605 +87,666 @@ class _FavoriteWordsState extends State<FavoriteWords> {
   }
 
   Widget build(BuildContext context) {
-    return Obx(() =>
-        Scaffold(
+    return Obx(
+      () => Scaffold(
+        backgroundColor: const Color.fromRGBO(255, 251, 245, 1),
+        appBar: AppBar(
+          iconTheme: const IconThemeData(color: Colors.black),
           backgroundColor: const Color.fromRGBO(255, 251, 245, 1),
-          appBar: AppBar(
-            iconTheme: const IconThemeData(color: Colors.black),
-            backgroundColor: const Color.fromRGBO(255, 251, 245, 1),
-            title: const Text(
-              'Favorite Words',
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2),
-            ),
+          title: const Text(
+            'Favorite Words',
+            style: TextStyle(
+                fontStyle: FontStyle.italic,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2),
           ),
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 8),
-                child: Container(
-                  width: 160,
-                  height: 33,
-                  decoration: BoxDecoration(
-                      color: const Color.fromRGBO(255, 251, 245, 1),
-                      border: Border.all(color: Colors.black, width: 2)),
-                  child: DropdownButton<String>(
-                    value: _selectedAnimal,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedAnimal = value;
-                        update();
-                        listIndex = 0.obs;
-                      });
-                    },
-                    hint: const Center(
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'High to Low',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Colors.black, fontWeight: FontWeight.bold),
-                          ),
-                        )),
-                    // Hide the default underline
-                    underline: Container(),
-                    // set the color of the dropdown menu
-                    dropdownColor: const Color.fromRGBO(255, 251, 245, 1),
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 12, bottom: 8),
+              child: Container(
+                width: 160,
+                height: 33,
+                decoration: BoxDecoration(
+                    color: const Color.fromRGBO(255, 251, 245, 1),
+                    border: Border.all(color: Colors.black, width: 2)),
+                child: DropdownButton<String>(
+                  value: _selectedAnimal,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedAnimal = value;
 
-                    icon: const Icon(
-                      Icons.arrow_downward,
-                      color: Colors.black,
+                      listIndex = 0.obs;
+                    });
+                  },
+                  hint: const Center(
+                      child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'High to Low',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold),
                     ),
-                    isExpanded: true,
+                  )),
+                  // Hide the default underline
+                  underline: Container(),
+                  // set the color of the dropdown menu
+                  dropdownColor: const Color.fromRGBO(255, 251, 245, 1),
 
-                    // The list of options
-                    items: _frequency
-                        .map((e) => DropdownMenuItem(
-                      value: e,
-                      child: Container(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          e,
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                      ),
-                    ))
-                        .toList(),
-
-                    // Customize the selected item
-                    selectedItemBuilder: (BuildContext context) => _frequency
-                        .map((e) => Center(
-                      child: Text(
-                        e,
-                        style: const TextStyle(
-                            fontSize: 17,
-                            color: Colors.black,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ))
-                        .toList(),
+                  icon: const Icon(
+                    Icons.arrow_downward,
+                    color: Colors.black,
                   ),
+                  isExpanded: true,
+
+                  // The list of options
+                  items: _frequency
+                      .map((e) => DropdownMenuItem(
+                            value: e,
+                            child: Container(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                e,
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                            ),
+                          ))
+                      .toList(),
+
+                  // Customize the selected item
+                  selectedItemBuilder: (BuildContext context) => _frequency
+                      .map((e) => Center(
+                            child: Text(
+                              e,
+                              style: const TextStyle(
+                                  fontSize: 17,
+                                  color: Colors.black,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ))
+                      .toList(),
                 ),
               ),
-              Padding(
-                padding:
-                const EdgeInsets.only(left: 12, right: 12, bottom: 2, top: 2),
-                child: Container(
-                  height: 190,
-                  width: 400,
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black, width: 3),
-                      color: const Color.fromRGBO(174, 213, 200, 1),
-                      borderRadius: BorderRadius.circular(8)),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10, top: 5),
-                            child: Row(
-                              children: [
-                                _selectedAnimal == 'High'
-                                    ? Text(
-                                  HF[inx.value].word.toString(),
-                                  style: const TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic),
-                                )
-                                    : _selectedAnimal == 'Medium'
-                                    ? Text(
-                                  MF[inx.value].word.toString(),
-                                  style: const TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic),
-                                )
-                                    : _selectedAnimal == 'Low'
-                                    ? Text(
-                                  LF[inx.value].word.toString(),
-                                  style: const TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic),
-                                )
-                                    : _selectedAnimal == 'High to Low' ||
-                                    _selectedAnimal == null
-                                    ? Text(
-                                  sorted[inx.value]
-                                      .word
-                                      .toString(),
-                                  style: const TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle:
-                                      FontStyle.italic),
-                                )
-                                    : Container(),
-                                const Text(
-                                  " (",
-                                  style: TextStyle(fontSize: 19),
-                                ),
-                                _selectedAnimal == 'High'
-                                    ? Text(
-                                  _items[inx.value].pos.toString(),
-                                  style: const TextStyle(fontSize: 17),
-                                )
-                                    : _selectedAnimal == 'Medium'
-                                    ? Text(
-                                  _items[inx.value].pos.toString(),
-                                  style: const TextStyle(fontSize: 17),
-                                )
-                                    : _selectedAnimal == 'Low'
-                                    ? Text(
-                                  _items[inx.value].pos.toString(),
-                                  style:
-                                  const TextStyle(fontSize: 17),
-                                )
-                                    : _selectedAnimal == 'High to Low' ||
-                                    _selectedAnimal == null
-                                    ? Text(
-                                  _items[inx.value]
-                                      .pos
-                                      .toString(),
-                                  style: const TextStyle(
-                                      fontSize: 17),
-                                )
-                                    : Container(),
-                                const Text(
-                                  ")",
-                                  style: TextStyle(fontSize: 19),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 5, top: 5),
-                            child: Row(
-                              children: [
-                                const Text('Frequency:',
-                                    style: TextStyle(fontSize: 17)),
-                                _selectedAnimal == 'High'
-                                    ? Text(
-                                  HF[inx.value].freq.toString(),
-                                  style: const TextStyle(fontSize: 17),
-                                )
-                                    : _selectedAnimal == 'Medium'
-                                    ? Text(
-                                  MF[inx.value].freq.toString(),
-                                  style: const TextStyle(fontSize: 17),
-                                )
-                                    : _selectedAnimal == 'Low'
-                                    ? Text(
-                                  LF[inx.value].freq.toString(),
-                                  style:
-                                  const TextStyle(fontSize: 17),
-                                )
-                                    : _selectedAnimal == 'High to Low' ||
-                                    _selectedAnimal == null
-                                    ? Text(
-                                  sorted[inx.value]
-                                      .freq
-                                      .toString(),
-                                  style: const TextStyle(
-                                      fontSize: 17),
-                                )
-                                    : Container(),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 3),
-                        child: Row(
-                          children: [
-                            const Text(' - ',
-                                style: TextStyle(
-                                    fontSize: 19, fontWeight: FontWeight.w500)),
-                            _selectedAnimal == 'High'
-                                ? Text(
-                              HF[inx.value].meaning.toString(),
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w500),
-                            )
-                                : _selectedAnimal == 'Medium'
-                                ? Text(
-                              MF[inx.value].meaning.toString(),
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500),
-                            )
-                                : _selectedAnimal == 'Low'
-                                ? Text(
-                              LF[inx.value].meaning.toString(),
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500),
-                            )
-                                : _selectedAnimal == 'High to Low' ||
-                                _selectedAnimal == null
-                                ? Text(
-                              sorted[inx.value]
-                                  .meaning
-                                  .toString(),
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500),
-                            )
-                                : Container()
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 4),
-                        child: Row(
-                          children: [
-                            Expanded(
-                                child: _selectedAnimal == 'High'
-                                    ? Text(
-                                  HF[inx.value].example.toString(),
-                                  maxLines: 3,
-                                  softWrap: true,
-                                  style: const TextStyle(fontSize: 19),
-                                  textAlign: TextAlign.start,
-                                )
-                                    : _selectedAnimal == 'Medium'
-                                    ? Text(
-                                  MF[inx.value].example.toString(),
-                                  maxLines: 3,
-                                  softWrap: true,
-                                  style: const TextStyle(fontSize: 19),
-                                  textAlign: TextAlign.start,
-                                )
-                                    : _selectedAnimal == 'Low'
-                                    ? Text(
-                                  LF[inx.value].example.toString(),
-                                  maxLines: 3,
-                                  softWrap: true,
-                                  style:
-                                  const TextStyle(fontSize: 19),
-                                  textAlign: TextAlign.start,
-                                )
-                                    : _selectedAnimal == 'High to Low' ||
-                                    _selectedAnimal == null
-                                    ? Text(
-                                  sorted[inx.value]
-                                      .example
-                                      .toString(),
-                                  maxLines: 3,
-                                  softWrap: true,
-                                  style: const TextStyle(
-                                      fontSize: 19),
-                                  textAlign: TextAlign.start,
-                                )
-                                    : Container()),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 10),
-                        child: Row(
-                          children: [
-                            const Text(
-                              'Synonyms: ',
-                              style: TextStyle(fontSize: 17),
-                            ),
-                            _selectedAnimal == 'High'
-                                ? Text(
-                              HF[inx.value].syn.toString(),
-                              style: const TextStyle(fontSize: 17),
-                            )
-                                : _selectedAnimal == 'Medium'
-                                ? Text(
-                              MF[inx.value].syn.toString(),
-                              style: const TextStyle(fontSize: 17),
-                            )
-                                : _selectedAnimal == 'Low'
-                                ? Text(
-                              LF[inx.value].syn.toString(),
-                              style: const TextStyle(fontSize: 17),
-                            )
-                                : _selectedAnimal == 'High to Low' ||
-                                _selectedAnimal == null
-                                ? Text(
-                              sorted[inx.value].syn.toString(),
-                              style:
-                              const TextStyle(fontSize: 17),
-                            )
-                                : Container()
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 4),
-                        child: Row(
-                          children: [
-                            const Text(
-                              'Antonyms: ',
-                              style: TextStyle(fontSize: 17),
-                            ),
-                            _selectedAnimal == 'High'
-                                ? Text(
-                              HF[inx.value].ant.toString(),
-                              style: const TextStyle(fontSize: 17),
-                            )
-                                : _selectedAnimal == 'Medium'
-                                ? Text(
-                              MF[inx.value].ant.toString(),
-                              style: const TextStyle(fontSize: 17),
-                            )
-                                : _selectedAnimal == 'Low'
-                                ? Text(
-                              LF[inx.value].ant.toString(),
-                              style: const TextStyle(fontSize: 17),
-                            )
-                                : _selectedAnimal == 'High to Low' ||
-                                _selectedAnimal == null
-                                ? Text(
-                              sorted[inx.value].ant.toString(),
-                              style:
-                              const TextStyle(fontSize: 17),
-                            )
-                                : Container()
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SingleChildScrollView(
-                child: _selectedAnimal == 'High'
-                    ? SizedBox(
-                  height: MediaQuery.of(context).size.height - 330,
-                  child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: Constants.favWords.length,
-                      itemBuilder: (_, listIndex) {
-                        final favData = Constants.favWords[listIndex];
-                        return Padding(
-                            padding: const EdgeInsets.only(
-                                left: 10, right: 10, top: 8, bottom: 8),
-                            child: GestureDetector(
-                              onTap: () {
-                                print(_selectedAnimal);
-                                setState(() {
-                                  inx = listIndex.obs;
-                                  tappedListIndex = listIndex;
-                                  //print(inx);
-                                  print(HF[listIndex].meaning.toString());
-                                });
-                              },
-                              child: Container(
-                                height: 53,
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: Colors.black, width: 3),
-                                    color: tappedListIndex == listIndex
-                                        ? const Color.fromRGBO(
-                                        174, 213, 200, 1)
-                                        : const Color.fromRGBO(
-                                        222, 251, 194, 1),
-                                    borderRadius: BorderRadius.circular(8)),
-                                // color: isSelected
-                                //     ? Colors.cyan
-                                //     : Colors.lightGreen,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    isSelected = true;
-                                    setState(() {
-                                      inx = listIndex.obs;
-                                      tappedListIndex = listIndex;
-                                      //print(inx);
-                                      //print(HF[inx.value].word.toString());
-                                    });
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                          children: [
-
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  HF[listIndex]
+            ),
+            Padding(
+              padding:
+                  const EdgeInsets.only(left: 12, right: 12, bottom: 2, top: 2),
+              child: Container(
+                height: 190,
+                width: 400,
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 3),
+                    color: const Color.fromRGBO(174, 213, 200, 1),
+                    borderRadius: BorderRadius.circular(8)),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10, top: 5),
+                          child: Row(
+                            children: [
+                              _selectedAnimal == 'High'
+                                  ? Text(
+                                      HF[inx.value].word.toString(),
+                                      style: const TextStyle(
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle: FontStyle.italic),
+                                    )
+                                  : _selectedAnimal == 'Medium'
+                                      ? Text(
+                                          MF[inx.value].word.toString(),
+                                          style: const TextStyle(
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.bold,
+                                              fontStyle: FontStyle.italic),
+                                        )
+                                      : _selectedAnimal == 'Low'
+                                          ? Text(
+                                              LF[inx.value].word.toString(),
+                                              style: const TextStyle(
+                                                  fontSize: 30,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontStyle: FontStyle.italic),
+                                            )
+                                          : _selectedAnimal == 'High to Low' ||
+                                                  _selectedAnimal == null
+                                              ? Text(
+                                                  sorted[inx.value]
                                                       .word
                                                       .toString(),
                                                   style: const TextStyle(
-                                                      fontSize: 17,
+                                                      fontSize: 30,
                                                       fontWeight:
-                                                      FontWeight.w500),
-                                                ),
-                                                const Text("  --  "),
-                                                Container(
-                                                  width: 5,
-                                                ),
-                                                Text(
-                                                  HF[listIndex]
-                                                      .meaning
+                                                          FontWeight.bold,
+                                                      fontStyle:
+                                                          FontStyle.italic),
+                                                )
+                                              : Container(),
+                              const Text(
+                                " (",
+                                style: TextStyle(fontSize: 19),
+                              ),
+                              _selectedAnimal == 'High'
+                                  ? Text(
+                                      _items[inx.value].pos.toString(),
+                                      style: const TextStyle(fontSize: 17),
+                                    )
+                                  : _selectedAnimal == 'Medium'
+                                      ? Text(
+                                          _items[inx.value].pos.toString(),
+                                          style: const TextStyle(fontSize: 17),
+                                        )
+                                      : _selectedAnimal == 'Low'
+                                          ? Text(
+                                              _items[inx.value].pos.toString(),
+                                              style:
+                                                  const TextStyle(fontSize: 17),
+                                            )
+                                          : _selectedAnimal == 'High to Low' ||
+                                                  _selectedAnimal == null
+                                              ? Text(
+                                                  _items[inx.value]
+                                                      .pos
                                                       .toString(),
-                                                  maxLines:
-                                                  1, // Don't wrap at all
-                                                  softWrap:
-                                                  false, // Don't wrap at soft breaks
-                                                  overflow:
-                                                  TextOverflow.ellipsis,
                                                   style: const TextStyle(
-                                                      fontSize: 17,
-                                                      fontWeight:
-                                                      FontWeight.w500),
-                                                ),
-                                              ],
-                                            ),
-                                            /*Obx(
-                                                  () => GestureDetector(
-                                                onTap: () {
-                                                  tappedIndex = index;
-                                                  favorite.toggle();
-                                                  print('favorite');
-                                                },
-                                                child: Container(
-                                                  child: Icon(
-                                                    Icons.favorite,
-                                                    color: favorite.isTrue &&
-                                                        tappedIndex ==
+                                                      fontSize: 17),
+                                                )
+                                              : Container(),
+                              const Text(
+                                ")",
+                                style: TextStyle(fontSize: 19),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 5, top: 5),
+                          child: Row(
+                            children: [
+                              const Text('Frequency:',
+                                  style: TextStyle(fontSize: 17)),
+                              _selectedAnimal == 'High'
+                                  ? Text(
+                                      HF[inx.value].freq.toString(),
+                                      style: const TextStyle(fontSize: 17),
+                                    )
+                                  : _selectedAnimal == 'Medium'
+                                      ? Text(
+                                          MF[inx.value].freq.toString(),
+                                          style: const TextStyle(fontSize: 17),
+                                        )
+                                      : _selectedAnimal == 'Low'
+                                          ? Text(
+                                              LF[inx.value].freq.toString(),
+                                              style:
+                                                  const TextStyle(fontSize: 17),
+                                            )
+                                          : _selectedAnimal == 'High to Low' ||
+                                                  _selectedAnimal == null
+                                              ? Text(
+                                                  sorted[inx.value]
+                                                      .freq
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                      fontSize: 17),
+                                                )
+                                              : Container(),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, top: 3),
+                      child: Row(
+                        children: [
+                          const Text(' - ',
+                              style: TextStyle(
+                                  fontSize: 19, fontWeight: FontWeight.w500)),
+                          _selectedAnimal == 'High'
+                              ? Text(
+                                  HF[inx.value].meaning.toString(),
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
+                                )
+                              : _selectedAnimal == 'Medium'
+                                  ? Text(
+                                      MF[inx.value].meaning.toString(),
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500),
+                                    )
+                                  : _selectedAnimal == 'Low'
+                                      ? Text(
+                                          LF[inx.value].meaning.toString(),
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500),
+                                        )
+                                      : _selectedAnimal == 'High to Low' ||
+                                              _selectedAnimal == null
+                                          ? Text(
+                                              sorted[inx.value]
+                                                  .meaning
+                                                  .toString(),
+                                              style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500),
+                                            )
+                                          : Container()
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, top: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: _selectedAnimal == 'High'
+                                  ? Text(
+                                      HF[inx.value].example.toString(),
+                                      maxLines: 3,
+                                      softWrap: true,
+                                      style: const TextStyle(fontSize: 19),
+                                      textAlign: TextAlign.start,
+                                    )
+                                  : _selectedAnimal == 'Medium'
+                                      ? Text(
+                                          MF[inx.value].example.toString(),
+                                          maxLines: 3,
+                                          softWrap: true,
+                                          style: const TextStyle(fontSize: 19),
+                                          textAlign: TextAlign.start,
+                                        )
+                                      : _selectedAnimal == 'Low'
+                                          ? Text(
+                                              LF[inx.value].example.toString(),
+                                              maxLines: 3,
+                                              softWrap: true,
+                                              style:
+                                                  const TextStyle(fontSize: 19),
+                                              textAlign: TextAlign.start,
+                                            )
+                                          : _selectedAnimal == 'High to Low' ||
+                                                  _selectedAnimal == null
+                                              ? Text(
+                                                  sorted[inx.value]
+                                                      .example
+                                                      .toString(),
+                                                  maxLines: 3,
+                                                  softWrap: true,
+                                                  style: const TextStyle(
+                                                      fontSize: 19),
+                                                  textAlign: TextAlign.start,
+                                                )
+                                              : Container()),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, top: 10),
+                      child: Row(
+                        children: [
+                          const Text(
+                            'Synonyms: ',
+                            style: TextStyle(fontSize: 17),
+                          ),
+                          _selectedAnimal == 'High'
+                              ? Text(
+                                  HF[inx.value].syn.toString(),
+                                  style: const TextStyle(fontSize: 17),
+                                )
+                              : _selectedAnimal == 'Medium'
+                                  ? Text(
+                                      MF[inx.value].syn.toString(),
+                                      style: const TextStyle(fontSize: 17),
+                                    )
+                                  : _selectedAnimal == 'Low'
+                                      ? Text(
+                                          LF[inx.value].syn.toString(),
+                                          style: const TextStyle(fontSize: 17),
+                                        )
+                                      : _selectedAnimal == 'High to Low' ||
+                                              _selectedAnimal == null
+                                          ? Text(
+                                              sorted[inx.value].syn.toString(),
+                                              style:
+                                                  const TextStyle(fontSize: 17),
+                                            )
+                                          : Container()
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, top: 4),
+                      child: Row(
+                        children: [
+                          const Text(
+                            'Antonyms: ',
+                            style: TextStyle(fontSize: 17),
+                          ),
+                          _selectedAnimal == 'High'
+                              ? Text(
+                                  HF[inx.value].ant.toString(),
+                                  style: const TextStyle(fontSize: 17),
+                                )
+                              : _selectedAnimal == 'Medium'
+                                  ? Text(
+                                      MF[inx.value].ant.toString(),
+                                      style: const TextStyle(fontSize: 17),
+                                    )
+                                  : _selectedAnimal == 'Low'
+                                      ? Text(
+                                          LF[inx.value].ant.toString(),
+                                          style: const TextStyle(fontSize: 17),
+                                        )
+                                      : _selectedAnimal == 'High to Low' ||
+                                              _selectedAnimal == null
+                                          ? Text(
+                                              sorted[inx.value].ant.toString(),
+                                              style:
+                                                  const TextStyle(fontSize: 17),
+                                            )
+                                          : Container()
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SingleChildScrollView(
+              child: _selectedAnimal == 'High'
+                  ? SizedBox(
+                      height: MediaQuery.of(context).size.height - 330,
+                      child: FutureBuilder(
+                        future: fetchDataFromDB(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<dynamic> snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            if (snapshot.hasError) {
+                              return Text('Error Occurred $snapshot.error');
+                            } else if (snapshot.hasData) {
+                              return SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height - 320,
+                                child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: snapshot.data.length,
+                                    itemBuilder: (_, index) {
+                                      final wordData = snapshot.data[index];
+
+                                      var map = <String, dynamic>{};
+                                      wordData.forEach(
+                                          (key, value) => map[key] = value);
+
+                                      WordClass favWordClass =
+                                          WordClass.fromJson(map);
+
+                                      return SizedBox(
+                                        child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 10,
+                                                right: 10,
+                                                top: 8,
+                                                bottom: 8),
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  inx = index.obs;
+                                                  tappedListIndex = index;
+                                                });
+                                              },
+                                              child: Container(
+                                                height: 55,
+                                                decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                        color: Colors.black,
+                                                        width: 3),
+                                                    color: tappedListIndex ==
                                                             index
-                                                        ? Colors.red
-                                                        : Colors.grey,
+                                                        ? const Color.fromRGBO(
+                                                            126, 212, 230, 1)
+                                                        : Colors.yellowAccent
+                                                            .shade700,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8)),
+                                                // color: isSelected
+                                                //     ? Colors.cyan
+                                                //     : Colors.lightGreen,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    isSelected = true;
+                                                    setState(() {
+                                                      inx = index.obs;
+                                                      tappedListIndex = index;
+                                                      print(inx);
+                                                    });
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Container(
+                                                          width: 20,
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              favWordClass.word
+                                                                  as String,
+                                                              style: const TextStyle(
+                                                                  fontSize: 17,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500),
+                                                            ),
+                                                            const Text(
+                                                                "  --  "),
+                                                            Container(
+                                                              width: 5,
+                                                            ),
+                                                            SizedBox(
+                                                              width: 120,
+                                                              child: Text(
+                                                                favWordClass
+                                                                    .meaning
+                                                                    .toString(),
+                                                                maxLines:
+                                                                    1, // Don't wrap at all
+                                                                softWrap:
+                                                                    false, // Don't wrap at soft breaks
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        17,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            setState(() {
+                                                              isFav = !isFav;
+                                                              update(
+                                                                  favWordClass,
+                                                                  isFav);
+                                                            });
+
+                                                            // Constants.favWords
+                                                            //     .add(
+                                                            //         WordClass(
+                                                            //   id: wordData.id,
+                                                            //   word: wordData
+                                                            //       .word,
+                                                            //   meaning: wordData
+                                                            //       .meaning,
+                                                            //   example: wordData
+                                                            //       .example,
+                                                            //   syn: wordData
+                                                            //       .syn,
+                                                            //   ant: wordData
+                                                            //       .ant,
+                                                            //   pos: wordData
+                                                            //       .pos,
+                                                            //   freq: wordData
+                                                            //       .freq,
+                                                            //   fvrt: wordData
+                                                            //       .fvrt,
+                                                            // ));
+
+                                                            //gredb.getData();
+
+                                                            // favrtFunction(
+                                                            //     index);
+                                                            // setState(() {});
+                                                            // String tmpFvrt =
+                                                            //     favrtS.toString();
+                                                            // gredb.update(
+                                                            //     items[index].id!,
+                                                            //     favrtS);
+                                                            tappedIndex = index;
+                                                            favorite.toggle();
+                                                          },
+                                                          child: Icon(
+                                                            Icons.favorite,
+                                                            color: favWordClass
+                                                                        .fvrt ==
+                                                                    0
+                                                                ? Colors.grey
+                                                                : Colors.red,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            )*/
-                                            // Obx(
-                                            //   () => GestureDetector(
-                                            //     onTap: () {
-                                            //       tappedIndex = listIndex;
-                                            //       favorite.toggle();
-                                            //       print('favorite');
-                                            //     },
-                                            //     child: Container(
-                                            //       width: 20,
-                                            //       child: Icon(
-                                            //         Icons.favorite,
-                                            //         color: favorite.isTrue &&
-                                            //                 tappedIndex ==
-                                            //                     listIndex
-                                            //             ? Colors.red
-                                            //             : Colors.grey,
-                                            //       ),
-                                            //     ),
-                                            //   ),
-                                            // ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ));
-                      }),
-                )
-                    : _selectedAnimal == 'Medium'
-                    ? SizedBox(
-                  height: MediaQuery.of(context).size.height - 330,
-                  child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: MF.length,
-                      itemBuilder: (_, listIndex) {
-                        return Padding(
-                            padding: const EdgeInsets.only(
-                                left: 10, right: 10, top: 8, bottom: 8),
-                            child: GestureDetector(
-                              onTap: () {
-                                print(_selectedAnimal);
-                                setState(() {
-                                  inx = listIndex.obs;
-                                  tappedListIndex = listIndex;
-                                  //print(inx);
-                                  //print(MF[inx.value].meaning.toString());
-                                });
-                              },
-                              child: Container(
-                                height: 53,
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: Colors.black, width: 3),
-                                    color: tappedListIndex == listIndex
-                                        ? const Color.fromRGBO(
-                                        174, 213, 200, 1)
-                                        : const Color.fromRGBO(
-                                        222, 251, 194, 1),
-                                    borderRadius:
-                                    BorderRadius.circular(8)),
-                                // color: isSelected
-                                //     ? Colors.cyan
-                                //     : Colors.lightGreen,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    isSelected = true;
-                                    setState(() {
-                                      inx = listIndex.obs;
-                                      tappedListIndex = listIndex;
-                                      //print(inx);
-                                      //print(MF[inx.value].word.toString());
-                                    });
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          width: 0,
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              MF[listIndex]
-                                                  .word
-                                                  .toString(),
-                                              style: const TextStyle(
-                                                  fontSize: 17,
-                                                  fontWeight:
-                                                  FontWeight.w500),
-                                            ),
-                                            const Text("  --  "),
-                                            Container(
-                                              width: 5,
-                                            ),
-                                            Text(
-                                              MF[listIndex]
-                                                  .meaning
-                                                  .toString(),
-                                              maxLines:
-                                              1, // Don't wrap at all
-                                              softWrap:
-                                              false, // Don't wrap at soft breaks
-                                              overflow:
-                                              TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  fontSize: 17,
-                                                  fontWeight:
-                                                  FontWeight.w500),
-                                            ),
-                                          ],
-                                        ),
-                                        /*Obx(
+                                            )),
+                                      );
+                                    }),
+                              );
+                            } else {
+                              return const Text('Empty data');
+                            }
+                          } else {
+                            return Text('State: ${snapshot.connectionState}');
+                          }
+                        },
+                      ),
+                    )
+                  : _selectedAnimal == 'Medium'
+                      ? SizedBox(
+                          height: MediaQuery.of(context).size.height - 330,
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: MF.length,
+                              itemBuilder: (_, listIndex) {
+                                return Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 10, right: 10, top: 8, bottom: 8),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        print(_selectedAnimal);
+                                        setState(() {
+                                          inx = listIndex.obs;
+                                          tappedListIndex = listIndex;
+                                          //print(inx);
+                                          //print(MF[inx.value].meaning.toString());
+                                        });
+                                      },
+                                      child: Container(
+                                        height: 53,
+                                        decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: Colors.black, width: 3),
+                                            color: tappedListIndex == listIndex
+                                                ? const Color.fromRGBO(
+                                                    174, 213, 200, 1)
+                                                : const Color.fromRGBO(
+                                                    222, 251, 194, 1),
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
+                                        // color: isSelected
+                                        //     ? Colors.cyan
+                                        //     : Colors.lightGreen,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            isSelected = true;
+                                            setState(() {
+                                              inx = listIndex.obs;
+                                              tappedListIndex = listIndex;
+                                              //print(inx);
+                                              //print(MF[inx.value].word.toString());
+                                            });
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Container(
+                                                  width: 0,
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      MF[listIndex]
+                                                          .word
+                                                          .toString(),
+                                                      style: const TextStyle(
+                                                          fontSize: 17,
+                                                          fontWeight:
+                                                              FontWeight.w500),
+                                                    ),
+                                                    const Text("  --  "),
+                                                    Container(
+                                                      width: 5,
+                                                    ),
+                                                    Text(
+                                                      MF[listIndex]
+                                                          .meaning
+                                                          .toString(),
+                                                      maxLines:
+                                                          1, // Don't wrap at all
+                                                      softWrap:
+                                                          false, // Don't wrap at soft breaks
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                          fontSize: 17,
+                                                          fontWeight:
+                                                              FontWeight.w500),
+                                                    ),
+                                                  ],
+                                                ),
+                                                /*Obx(
                                               () => GestureDetector(
                                             onTap: () {
                                               tappedIndex = index;
@@ -709,113 +765,113 @@ class _FavoriteWordsState extends State<FavoriteWords> {
                                             ),
                                           ),
                                         )*/
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ));
-                      }),
-                )
-                    : _selectedAnimal == 'Low'
-                    ? Container(
-                  height: MediaQuery.of(context).size.height - 330,
-                  child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: LF.length,
-                      itemBuilder: (_, listIndex) {
-                        return Padding(
-                            padding: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
-                                top: 8,
-                                bottom: 8),
-                            child: GestureDetector(
-                              onTap: () {
-                                print(_selectedAnimal);
-                                setState(() {
-                                  inx = listIndex.obs;
-                                  tappedListIndex = listIndex;
-                                  //print(inx);
-                                  print(LF[listIndex]
-                                      .meaning
-                                      .toString());
-                                });
-                              },
-                              child: Container(
-                                height: 53,
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: Colors.black,
-                                        width: 3),
-                                    color:
-                                    tappedListIndex == listIndex
-                                        ? const Color.fromRGBO(
-                                        174, 213, 200, 1)
-                                        : const Color.fromRGBO(
-                                        222, 251, 194, 1),
-                                    borderRadius:
-                                    BorderRadius.circular(8)),
-                                // color: isSelected
-                                //     ? Colors.cyan
-                                //     : Colors.lightGreen,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    isSelected = true;
-                                    setState(() {
-                                      inx = listIndex.obs;
-                                      tappedListIndex = listIndex;
-                                      //print(inx);
-                                      print(LF[listIndex]
-                                          .word
-                                          .toString());
-                                    });
-                                  },
-                                  child: Padding(
-                                    padding:
-                                    const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          width: 0,
+                                              ],
+                                            ),
+                                          ),
                                         ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              LF[listIndex]
-                                                  .word
-                                                  .toString(),
-                                              style: const TextStyle(
-                                                  fontSize: 17,
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w500),
-                                            ),
-                                            const Text("  --  "),
-                                            Container(
-                                              width: 5,
-                                            ),
-                                            Text(
-                                              LF[listIndex]
+                                      ),
+                                    ));
+                              }),
+                        )
+                      : _selectedAnimal == 'Low'
+                          ? Container(
+                              height: MediaQuery.of(context).size.height - 330,
+                              child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: LF.length,
+                                  itemBuilder: (_, listIndex) {
+                                    return Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 10,
+                                            right: 10,
+                                            top: 8,
+                                            bottom: 8),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            print(_selectedAnimal);
+                                            setState(() {
+                                              inx = listIndex.obs;
+                                              tappedListIndex = listIndex;
+                                              //print(inx);
+                                              print(LF[listIndex]
                                                   .meaning
-                                                  .toString(),
-                                              maxLines:
-                                              1, // Don't wrap at all
-                                              softWrap:
-                                              false, // Don't wrap at soft breaks
-                                              overflow: TextOverflow
-                                                  .ellipsis,
-                                              style: const TextStyle(
-                                                  fontSize: 17,
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w500),
-                                            ),
-                                          ],
-                                        ),
-                                        /*Obx(
+                                                  .toString());
+                                            });
+                                          },
+                                          child: Container(
+                                            height: 53,
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    color: Colors.black,
+                                                    width: 3),
+                                                color:
+                                                    tappedListIndex == listIndex
+                                                        ? const Color.fromRGBO(
+                                                            174, 213, 200, 1)
+                                                        : const Color.fromRGBO(
+                                                            222, 251, 194, 1),
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
+                                            // color: isSelected
+                                            //     ? Colors.cyan
+                                            //     : Colors.lightGreen,
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                isSelected = true;
+                                                setState(() {
+                                                  inx = listIndex.obs;
+                                                  tappedListIndex = listIndex;
+                                                  //print(inx);
+                                                  print(LF[listIndex]
+                                                      .word
+                                                      .toString());
+                                                });
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Container(
+                                                      width: 0,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          LF[listIndex]
+                                                              .word
+                                                              .toString(),
+                                                          style: const TextStyle(
+                                                              fontSize: 17,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500),
+                                                        ),
+                                                        const Text("  --  "),
+                                                        Container(
+                                                          width: 5,
+                                                        ),
+                                                        Text(
+                                                          LF[listIndex]
+                                                              .meaning
+                                                              .toString(),
+                                                          maxLines:
+                                                              1, // Don't wrap at all
+                                                          softWrap:
+                                                              false, // Don't wrap at soft breaks
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: const TextStyle(
+                                                              fontSize: 17,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    /*Obx(
                                               () => GestureDetector(
                                             onTap: () {
                                               tappedIndex = index;
@@ -834,117 +890,121 @@ class _FavoriteWordsState extends State<FavoriteWords> {
                                             ),
                                           ),
                                         )*/
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ));
-                      }),
-                )
-                    : _selectedAnimal == null ||
-                    _selectedAnimal == 'High to Low'
-                    ? SizedBox(
-                  height:
-                  MediaQuery.of(context).size.height - 330,
-                  child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: sorted.length,
-                      itemBuilder: (_, listIndex) {
-                        return Padding(
-                            padding: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
-                                top: 8,
-                                bottom: 8),
-                            child: GestureDetector(
-                              onTap: () {
-                                print(_selectedAnimal);
-                                setState(() {
-                                  inx = listIndex.obs;
-                                  tappedListIndex = listIndex;
-                                  //print(inx);
-                                  print(sorted[listIndex]
-                                      .meaning
-                                      .toString());
-                                });
-                              },
-                              child: Container(
-                                height: 53,
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: Colors.black,
-                                        width: 3),
-                                    color: tappedListIndex ==
-                                        listIndex
-                                        ? const Color.fromRGBO(
-                                        174, 213, 200, 1)
-                                        : const Color.fromRGBO(
-                                        222, 251, 194, 1),
-                                    borderRadius:
-                                    BorderRadius.circular(8)),
-                                // color: isSelected
-                                //     ? Colors.cyan
-                                //     : Colors.lightGreen,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    isSelected = true;
-                                    setState(() {
-                                      inx = listIndex.obs;
-                                      tappedListIndex = listIndex;
-                                      //print(inx);
-                                      print(sorted[listIndex]
-                                          .word
-                                          .toString());
-                                    });
-                                  },
-                                  child: Padding(
-                                    padding:
-                                    const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment
-                                          .center,
-                                      children: [
-                                        Container(
-                                          width: 0,
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              sorted[listIndex]
-                                                  .word
-                                                  .toString(),
-                                              style: const TextStyle(
-                                                  fontSize: 17,
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w500),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
-                                            const Text("  --  "),
-                                            Container(
-                                              width: 5,
-                                            ),
-                                            Text(
-                                              sorted[listIndex]
-                                                  .meaning
-                                                  .toString(),
-                                              maxLines:
-                                              1, // Don't wrap at all
-                                              softWrap:
-                                              false, // Don't wrap at soft breaks
-                                              overflow:
-                                              TextOverflow
-                                                  .ellipsis,
-                                              style: const TextStyle(
-                                                  fontSize: 17,
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w500),
-                                            ),
-                                          ],
-                                        ),
-                                        /*Obx(
+                                          ),
+                                        ));
+                                  }),
+                            )
+                          : _selectedAnimal == null ||
+                                  _selectedAnimal == 'High to Low'
+                              ? SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height - 330,
+                                  child: ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: sorted.length,
+                                      itemBuilder: (_, listIndex) {
+                                        return Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 10,
+                                                right: 10,
+                                                top: 8,
+                                                bottom: 8),
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                print(_selectedAnimal);
+                                                setState(() {
+                                                  inx = listIndex.obs;
+                                                  tappedListIndex = listIndex;
+                                                  //print(inx);
+                                                  print(sorted[listIndex]
+                                                      .meaning
+                                                      .toString());
+                                                });
+                                              },
+                                              child: Container(
+                                                height: 53,
+                                                decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                        color: Colors.black,
+                                                        width: 3),
+                                                    color: tappedListIndex ==
+                                                            listIndex
+                                                        ? const Color.fromRGBO(
+                                                            174, 213, 200, 1)
+                                                        : const Color.fromRGBO(
+                                                            222, 251, 194, 1),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8)),
+                                                // color: isSelected
+                                                //     ? Colors.cyan
+                                                //     : Colors.lightGreen,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    isSelected = true;
+                                                    setState(() {
+                                                      inx = listIndex.obs;
+                                                      tappedListIndex =
+                                                          listIndex;
+                                                      //print(inx);
+                                                      print(sorted[listIndex]
+                                                          .word
+                                                          .toString());
+                                                    });
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Container(
+                                                          width: 0,
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              sorted[listIndex]
+                                                                  .word
+                                                                  .toString(),
+                                                              style: const TextStyle(
+                                                                  fontSize: 17,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500),
+                                                            ),
+                                                            const Text(
+                                                                "  --  "),
+                                                            Container(
+                                                              width: 5,
+                                                            ),
+                                                            Text(
+                                                              sorted[listIndex]
+                                                                  .meaning
+                                                                  .toString(),
+                                                              maxLines:
+                                                                  1, // Don't wrap at all
+                                                              softWrap:
+                                                                  false, // Don't wrap at soft breaks
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style: const TextStyle(
+                                                                  fontSize: 17,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        /*Obx(
                                               () => GestureDetector(
                                             onTap: () {
                                               tappedIndex = index;
@@ -963,19 +1023,19 @@ class _FavoriteWordsState extends State<FavoriteWords> {
                                             ),
                                           ),
                                         )*/
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ));
-                      }),
-                )
-                    : Container(),
-              ),
-            ],
-          ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ));
+                                      }),
+                                )
+                              : Container(),
+            ),
+          ],
         ),
+      ),
     );
   }
 }

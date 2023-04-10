@@ -13,7 +13,7 @@ class _MeaningPageState extends State<MeaningPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
         image: DecorationImage(
           opacity: .7,
         image: AssetImage("images/bgimage.jpg",),

@@ -6,7 +6,7 @@ class WordClass {
   String? syn;
   String? ant;
   String? pos;
-  int? freq;
+  dynamic freq;
   int? fvrt;
 
   WordClass(

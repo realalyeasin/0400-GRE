@@ -30,9 +30,9 @@ class _WordViewState extends State<WordView> {
         child: Column(
           children: [
             Container(height: 200,color: Colors.cyan,),
-            FlatButton(onPressed: (){
-              Get.to(()=> AddWord());
-            }, child: Text('Add Words'))
+            // FlatButton(onPressed: (){
+            //   Get.to(()=> AddWord());
+            // }, child: Text('Add Words'))
           ],
         ),
       ),
