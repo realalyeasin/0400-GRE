@@ -55,6 +55,7 @@ dev_dependencies:
   flip_card:
   dotted_line:
   flutter_star: ^1.2.0
+  flutter_expand_view: ^1.6.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

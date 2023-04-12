@@ -36,18 +36,11 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
         await rootBundle.rootBundle.loadString('assets/wordjson.json');
     final data = await json.decode(response);
 
-
-
-
-
     setState(() {
       _items = List<WordClass>.from(data.map((e) {
         return WordClass.fromJson(e as Map<String, dynamic>);
       }));
     });
-
-
-
 
     sort();
     if (sortDone == true) {
@@ -64,7 +57,8 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
     print(sorted[0].freq);
     sortDone = true;
   }
-  update(){
+
+  update() {
     setState(() {
       listIndex = 0.obs;
     });
@@ -96,8 +90,8 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
   }
 
   Widget build(BuildContext context) {
-    return Obx(() =>
-      Scaffold(
+    return Obx(
+      () => Scaffold(
         backgroundColor: const Color.fromRGBO(255, 251, 245, 1),
         appBar: AppBar(
           iconTheme: const IconThemeData(color: Colors.black),
@@ -232,7 +226,8 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
                                                       .toString(),
                                                   style: const TextStyle(
                                                       fontSize: 30,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       fontStyle:
                                                           FontStyle.italic),
                                                 )
@@ -322,7 +317,8 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
                               ? Text(
                                   HF[inx.value].meaning.toString(),
                                   style: const TextStyle(
-                                      fontSize: 18, fontWeight: FontWeight.w500),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
                                 )
                               : _selectedAnimal == 'Medium'
                                   ? Text(
@@ -525,7 +521,6 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-
                                                 Row(
                                                   children: [
                                                     Text(
@@ -885,7 +880,8 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
                                                         : const Color.fromRGBO(
                                                             222, 251, 194, 1),
                                                     borderRadius:
-                                                        BorderRadius.circular(8)),
+                                                        BorderRadius.circular(
+                                                            8)),
                                                 // color: isSelected
                                                 //     ? Colors.cyan
                                                 //     : Colors.lightGreen,
@@ -894,7 +890,8 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
                                                     isSelected = true;
                                                     setState(() {
                                                       inx = listIndex.obs;
-                                                      tappedListIndex = listIndex;
+                                                      tappedListIndex =
+                                                          listIndex;
                                                       //print(inx);
                                                       print(sorted[listIndex]
                                                           .word
@@ -903,7 +900,8 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
                                                   },
                                                   child: Padding(
                                                     padding:
-                                                        const EdgeInsets.all(8.0),
+                                                        const EdgeInsets.all(
+                                                            8.0),
                                                     child: Row(
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
@@ -924,7 +922,8 @@ class _HighFrequencyWordsState extends State<HighFrequencyWords> {
                                                                       FontWeight
                                                                           .w500),
                                                             ),
-                                                            const Text("  --  "),
+                                                            const Text(
+                                                                "  --  "),
                                                             Container(
                                                               width: 5,
                                                             ),

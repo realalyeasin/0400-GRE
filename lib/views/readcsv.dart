@@ -10,7 +10,6 @@ import 'package:flutter/services.dart' as rootBundle;
 import '../database/db_word.dart';
 import '../main.dart';
 import '../model/model.dart';
-import '../practice.dart';
 import 'favorite_words.dart';
 import 'high_frequency_words.dart';
 
@@ -26,6 +25,13 @@ class _ReadCSVState extends State<ReadCSV> {
   List<WordClass> items = [];
   List<List<dynamic>> data = [];
   var inx = 0.obs;
+  var w = 'Ambivalence'.obs;
+  var m = 'Lack of Clarity'.obs;
+  var e = 'the lesson was fully ambivalant'.obs;
+  var s = 'being undecided'.obs;
+  var a = 'unperspective'.obs;
+  var p = 'adj'.obs;
+  var f = 5.obs;
   bool isFav = false;
   var isSelected = false;
   var loadDone = false.obs;
@@ -35,14 +41,7 @@ class _ReadCSVState extends State<ReadCSV> {
   var tappedIndex = -100.obs;
   var listIndex = false.obs;
   var tappedListIndex = 0;
-  final List<String> _frequency = [
-    "High",
-    "Medium",
-    "Low",
-  ];
-
   // the selected value
-  String? _selectedAnimal;
   @override
   initState() {
     // ignore: avoid_print
@@ -65,26 +64,23 @@ class _ReadCSVState extends State<ReadCSV> {
 
   Future<void> readJson() async {
     final String response =
-        await rootBundle.rootBundle.loadString('assets/wordjson.json');
+    await rootBundle.rootBundle.loadString('assets/wordjson.json');
     final data = await json.decode(response);
 
     dbHelper.queryRowCount().then((value) => {
       print(value),
-          if (value == 0)
-            {
-              setState(() {
-                items = List<WordClass>.from(data.map((e) {
-                  insertDataToDB(WordClass.fromJson(e));
-                  return WordClass.fromJson(e);
-                }));
-              })
-            }
-          else
-            {
-
-            }
-        });
-
+      if (value == 0)
+        {
+          setState(() {
+            items = List<WordClass>.from(data.map((e) {
+              insertDataToDB(WordClass.fromJson(e));
+              return WordClass.fromJson(e);
+            }));
+          })
+        }
+      else
+        {}
+    });
 
     // setState(() {
     //   items = List<WordClass>.from(data.map((e) {
@@ -101,25 +97,25 @@ class _ReadCSVState extends State<ReadCSV> {
     });
   }
 
-  favrtFunction(int? index) {
-    WordClass data = items[index!];
-    if (items[index].fvrt == 1) {
-      data.fvrt = 0;
-      print(data.fvrt);
-      print('Not Favorated -- ');
-      gredb.update(items[index].id!, data);
-
-      print(items[index].fvrt);
-    } else {
-      data.fvrt = 1;
-      print(data.fvrt);
-      print(' Favorated -- ');
-      gredb.update(items[index].id!, data);
-      print(items[index].fvrt);
-    }
-    setState(() {});
-    gredb.getData();
-  }
+  // favrtFunction(int? index) {
+  //   WordClass data = items[index!];
+  //   if (items[index].fvrt == 1) {
+  //     data.fvrt = 0;
+  //     print(data.fvrt);
+  //     print('Not Favorated -- ');
+  //     gredb.update(items[index].id!, data);
+  //
+  //     print(items[index].fvrt);
+  //   } else {
+  //     data.fvrt = 1;
+  //     print(data.fvrt);
+  //     print(' Favorated -- ');
+  //     gredb.update(items[index].id!, data);
+  //     print(items[index].fvrt);
+  //   }
+  //   setState(() {});
+  //   gredb.getData();
+  // }
 
   Future fetchDataFromDB() => fetchWordsFromDB();
 
@@ -168,7 +164,7 @@ class _ReadCSVState extends State<ReadCSV> {
 
   Future<List<WordClass>> ReadJSON() async {
     final jsonData =
-        await rootBundle.rootBundle.loadString('assets/wordjson.json');
+    await rootBundle.rootBundle.loadString('assets/wordjson.json');
     final list = jsonDecode(jsonData) as List<dynamic>;
     // print(list);
     print("////////////////");
@@ -214,7 +210,7 @@ class _ReadCSVState extends State<ReadCSV> {
                   ),
                   GestureDetector(
                       onTap: () {
-                        Get.to(ReadCSV());
+                        Get.offAll(ReadCSV());
                       },
                       child: const Text(
                         'All Words',
@@ -323,132 +319,137 @@ class _ReadCSVState extends State<ReadCSV> {
         children: [
           Obx(() => loadDone.isTrue
               ? Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Container(
-                    height: 190,
-                    width: 400,
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 3),
-                        color: const Color.fromRGBO(126, 212, 230, 1),
-                        borderRadius: BorderRadius.circular(8)),
-                    child: Column(
+            padding: const EdgeInsets.all(12.0),
+            child: Container(
+              height: 190,
+              width: 400,
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black, width: 3),
+                  color: const Color.fromRGBO(126, 212, 230, 1),
+                  borderRadius: BorderRadius.circular(8)),
+              child: Column(
+                children: [
+                  Obx(
+                        () => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Row(
-                        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        //   children: [
-                        //     Padding(
-                        //       padding: const EdgeInsets.only(left: 10, top: 5),
-                        //       child: Row(
-                        //         children: [
-                        //           Text(
-                        //             items[inx.value].word.toString(),
-                        //             style: const TextStyle(
-                        //                 fontSize: 30,
-                        //                 fontWeight: FontWeight.bold,
-                        //                 fontStyle: FontStyle.italic),
-                        //           ),
-                        //           const Text(
-                        //             " (",
-                        //             style: TextStyle(fontSize: 19),
-                        //           ),
-                        //           Text(
-                        //             items[inx.value].pos.toString(),
-                        //             style: const TextStyle(fontSize: 17),
-                        //           ),
-                        //           const Text(
-                        //             ")",
-                        //             style: TextStyle(fontSize: 19),
-                        //           ),
-                        //         ],
-                        //       ),
-                        //     ),
-                        //     Padding(
-                        //       padding: const EdgeInsets.only(right: 5, top: 5),
-                        //       child: Row(
-                        //         children: [
-                        //           StarScore(
-                        //             score: items[inx.value].freq!.toDouble(),
-                        //             star: Star(
-                        //                 fillColor: Colors.black,
-                        //                 emptyColor: Colors.black.withAlpha(88)),
-                        //           ),
-                        //           // Text('Frequency:',
-                        //           //     style: const TextStyle(fontSize: 17)),
-                        //           // Text(
-                        //           //   items[inx.value].freq.toString(),
-                        //           //   style: const TextStyle(fontSize: 17),
-                        //           // ),
-                        //         ],
-                        //       ),
-                        //     )
-                        //   ],
-                        // ),
-                        // Padding(
-                        //   padding: const EdgeInsets.only(left: 8, top: 3),
-                        //   child: Row(
-                        //     children: [
-                        //       const Text(' - ',
-                        //           style: TextStyle(
-                        //               fontSize: 19,
-                        //               fontWeight: FontWeight.w500)),
-                        //       Text(
-                        //         items[inx.value].meaning.toString(),
-                        //         style: const TextStyle(
-                        //             fontSize: 18, fontWeight: FontWeight.w500),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        // Padding(
-                        //   padding: const EdgeInsets.only(left: 8, top: 4),
-                        //   child: Row(
-                        //     children: [
-                        //       Expanded(
-                        //         child: Text(
-                        //           items[inx.value].example.toString(),
-                        //           maxLines: 3,
-                        //           softWrap: true,
-                        //           style: const TextStyle(fontSize: 19),
-                        //           textAlign: TextAlign.start,
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        // Padding(
-                        //   padding: const EdgeInsets.only(left: 8, top: 10),
-                        //   child: Row(
-                        //     children: [
-                        //       const Text(
-                        //         'Synonyms: ',
-                        //         style: const TextStyle(fontSize: 17),
-                        //       ),
-                        //       Text(
-                        //         items[inx.value].syn.toString(),
-                        //         style: const TextStyle(fontSize: 17),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        // Padding(
-                        //   padding: const EdgeInsets.only(left: 8, top: 4),
-                        //   child: Row(
-                        //     children: [
-                        //       const Text(
-                        //         'Antonyms: ',
-                        //         style: const TextStyle(fontSize: 17),
-                        //       ),
-                        //       Text(
-                        //         items[inx.value].ant.toString(),
-                        //         style: const TextStyle(fontSize: 17),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+                        Padding(
+                          padding:
+                          const EdgeInsets.only(left: 10, top: 5),
+                          child: Row(
+                            children: [
+                              Text(
+                                w.toString(),
+                                style: const TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FontStyle.italic),
+                              ),
+                              const Text(
+                                " (",
+                                style: TextStyle(fontSize: 19),
+                              ),
+                              Text(
+                                p.toString(),
+                                style: const TextStyle(fontSize: 17),
+                              ),
+                              const Text(
+                                ")",
+                                style: TextStyle(fontSize: 19),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding:
+                          const EdgeInsets.only(right: 5, top: 5),
+                          child: Row(
+                            children: [
+                              StarScore(
+                                score: f.value.toDouble(),
+                                star: Star(
+                                    fillColor: Colors.black,
+                                    emptyColor:
+                                    Colors.black.withAlpha(88)),
+                              ),
+                              // Text('Frequency:',
+                              //     style: const TextStyle(fontSize: 17)),
+                              // Text(
+                              //   items[inx.value].freq.toString(),
+                              //   style: const TextStyle(fontSize: 17),
+                              // ),
+                            ],
+                          ),
+                        )
                       ],
                     ),
                   ),
-                )
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, top: 3),
+                    child: Row(
+                      children: [
+                        const Text(' - ',
+                            style: TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w500)),
+                        Text(
+                          m.toString(),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, top: 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            e.toString(),
+                            maxLines: 3,
+                            softWrap: true,
+                            style: const TextStyle(fontSize: 19),
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, top: 10),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Synonyms: ',
+                          style: const TextStyle(fontSize: 17),
+                        ),
+                        Text(
+                          s.toString(),
+                          style: const TextStyle(fontSize: 17),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, top: 4),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Antonyms: ',
+                          style: const TextStyle(fontSize: 17),
+                        ),
+                        Text(
+                          a.toString(),
+                          style: const TextStyle(fontSize: 17),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
               : Container()),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -458,214 +459,242 @@ class _ReadCSVState extends State<ReadCSV> {
             ),
           ),
           Obx(
-            () => SingleChildScrollView(
+                () => SingleChildScrollView(
                 child: loadDone.isTrue
                     ? FutureBuilder(
-                        future: fetchDataFromDB(),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<dynamic> snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          } else if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            if (snapshot.hasError) {
-                              return Text('Error Occurred $snapshot.error');
-                            } else if (snapshot.hasData) {
-                              return SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height - 320,
-                                child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: snapshot.data.length,
-                                    itemBuilder: (_, index) {
-                                      final wordData = snapshot.data[index];
+                  future: fetchDataFromDB(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<dynamic> snapshot) {
+                    if (snapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(child: Text(''));
+                    } else if (snapshot.connectionState ==
+                        ConnectionState.done) {
+                      if (snapshot.hasError) {
+                        return Text('Error Occurred $snapshot.error');
+                      } else if (snapshot.hasData) {
+                        return SizedBox(
+                          height:
+                          MediaQuery.of(context).size.height - 320,
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (_, index) {
+                                final wordData = snapshot.data[index];
 
-                                      var map = <String, dynamic>{};
-                                      wordData.forEach(
-                                          (key, value) => map[key] = value);
+                                var map = <String, dynamic>{};
+                                wordData.forEach(
+                                        (key, value) => map[key] = value);
 
-                                      WordClass wordClass =
-                                          WordClass.fromJson(map);
+                                WordClass wordClass =
+                                WordClass.fromJson(map);
 
-                                      return SizedBox(
-                                        child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 10,
-                                                right: 10,
-                                                top: 8,
-                                                bottom: 8),
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                setState(() {
-                                                  inx = index.obs;
-                                                  tappedListIndex = index;
-                                                  print(inx);
-                                                  print(items[inx.value]
-                                                      .meaning
-                                                      .toString());
-                                                });
-                                              },
-                                              child: Container(
-                                                height: 55,
-                                                decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.black,
-                                                        width: 3),
-                                                    color: tappedListIndex ==
-                                                            index
-                                                        ? const Color.fromRGBO(
-                                                            126, 212, 230, 1)
-                                                        : Colors.yellowAccent
-                                                            .shade700,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8)),
-                                                // color: isSelected
-                                                //     ? Colors.cyan
-                                                //     : Colors.lightGreen,
-                                                child: GestureDetector(
-                                                  onTap: () {
-                                                    isSelected = true;
-                                                    setState(() {
-                                                      inx = index.obs;
-                                                      tappedListIndex = index;
-                                                      print(inx);
-                                                      print(items[inx.value]
-                                                          .word
-                                                          .toString());
-                                                    });
-                                                  },
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Container(
-                                                          width: 20,
+                                return SizedBox(
+                                  child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 10,
+                                          right: 10,
+                                          top: 8,
+                                          bottom: 8),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            w = RxString(wordClass.word
+                                                .toString());
+                                            m = RxString(wordClass.meaning
+                                                .toString());
+                                            e = RxString(wordClass.example
+                                                .toString());
+                                            a = RxString(
+                                                wordClass.ant.toString());
+                                            s = RxString(
+                                                wordClass.syn.toString());
+                                            p = RxString(
+                                                wordClass.pos.toString());
+                                            int ff =
+                                            int.parse(wordClass.freq);
+                                            f = RxInt(ff);
+                                            inx = index.obs;
+                                            tappedListIndex = index;
+                                            // print(inx);
+                                            // print(items[inx.value]
+                                            //     .meaning
+                                            //     .toString());
+                                          });
+                                        },
+                                        child: Container(
+                                          height: 55,
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Colors.black,
+                                                  width: 3),
+                                              color: tappedListIndex ==
+                                                  index
+                                                  ? const Color.fromRGBO(
+                                                  126, 212, 230, 1)
+                                                  : Colors.yellowAccent
+                                                  .shade700,
+                                              borderRadius:
+                                              BorderRadius.circular(
+                                                  8)),
+                                          // color: isSelected
+                                          //     ? Colors.cyan
+                                          //     : Colors.lightGreen,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              w = RxString(wordClass.word
+                                                  .toString());
+                                              m = RxString(wordClass
+                                                  .meaning
+                                                  .toString());
+                                              e = RxString(wordClass
+                                                  .example
+                                                  .toString());
+                                              a = RxString(wordClass.ant
+                                                  .toString());
+                                              s = RxString(wordClass.syn
+                                                  .toString());
+                                              p = RxString(wordClass.pos
+                                                  .toString());
+                                              int ff = int.parse(
+                                                  wordClass.freq);
+                                              f = RxInt(ff);
+                                              isSelected = true;
+                                              setState(() {
+                                                inx = index.obs;
+                                                tappedListIndex = index;
+                                                // print(inx);
+                                                // print(items[inx.value]
+                                                //     .word
+                                                //     .toString());
+                                              });
+                                            },
+                                            child: Padding(
+                                              padding:
+                                              const EdgeInsets.all(
+                                                  8.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceBetween,
+                                                children: [
+                                                  Container(
+                                                    width: 20,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        wordClass.word
+                                                        as String,
+                                                        style: const TextStyle(
+                                                            fontSize: 17,
+                                                            fontWeight:
+                                                            FontWeight
+                                                                .w500),
+                                                      ),
+                                                      const Text(
+                                                          "  --  "),
+                                                      Container(
+                                                        width: 5,
+                                                      ),
+                                                      SizedBox(
+                                                        width: 120,
+                                                        child: Text(
+                                                          wordClass
+                                                              .meaning
+                                                              .toString(),
+                                                          maxLines:
+                                                          1, // Don't wrap at all
+                                                          softWrap:
+                                                          false, // Don't wrap at soft breaks
+                                                          overflow:
+                                                          TextOverflow
+                                                              .ellipsis,
+                                                          style: const TextStyle(
+                                                              fontSize:
+                                                              17,
+                                                              fontWeight:
+                                                              FontWeight
+                                                                  .w500),
                                                         ),
-                                                        Row(
-                                                          children: [
-                                                            Text(
-                                                              wordClass.word
-                                                                  as String,
-                                                              style: const TextStyle(
-                                                                  fontSize: 17,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500),
-                                                            ),
-                                                            const Text(
-                                                                "  --  "),
-                                                            Container(
-                                                              width: 5,
-                                                            ),
-                                                            SizedBox(
-                                                              width: 120,
-                                                              child: Text(
-                                                                wordClass
-                                                                    .meaning
-                                                                    .toString(),
-                                                                maxLines:
-                                                                    1, // Don't wrap at all
-                                                                softWrap:
-                                                                    false, // Don't wrap at soft breaks
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                style: const TextStyle(
-                                                                    fontSize:
-                                                                        17,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        GestureDetector(
-                                                            onTap: () {
-                                                        setState(() {
-                                                          isFav = !isFav;
-                                                          update(
-                                                              wordClass,
-                                                              isFav);
-                                                        });
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        isFav = !isFav;
+                                                        update(wordClass,
+                                                            isFav);
+                                                      });
 
-                                                        // Constants.favWords
-                                                        //     .add(
-                                                        //         WordClass(
-                                                        //   id: wordData.id,
-                                                        //   word: wordData
-                                                        //       .word,
-                                                        //   meaning: wordData
-                                                        //       .meaning,
-                                                        //   example: wordData
-                                                        //       .example,
-                                                        //   syn: wordData
-                                                        //       .syn,
-                                                        //   ant: wordData
-                                                        //       .ant,
-                                                        //   pos: wordData
-                                                        //       .pos,
-                                                        //   freq: wordData
-                                                        //       .freq,
-                                                        //   fvrt: wordData
-                                                        //       .fvrt,
-                                                        // ));
+                                                      // Constants.favWords
+                                                      //     .add(
+                                                      //         WordClass(
+                                                      //   id: wordData.id,
+                                                      //   word: wordData
+                                                      //       .word,
+                                                      //   meaning: wordData
+                                                      //       .meaning,
+                                                      //   example: wordData
+                                                      //       .example,
+                                                      //   syn: wordData
+                                                      //       .syn,
+                                                      //   ant: wordData
+                                                      //       .ant,
+                                                      //   pos: wordData
+                                                      //       .pos,
+                                                      //   freq: wordData
+                                                      //       .freq,
+                                                      //   fvrt: wordData
+                                                      //       .fvrt,
+                                                      // ));
 
-                                                        //gredb.getData();
+                                                      //gredb.getData();
 
-                                                        // favrtFunction(
-                                                        //     index);
-                                                        // setState(() {});
-                                                        // String tmpFvrt =
-                                                        //     favrtS.toString();
-                                                        // gredb.update(
-                                                        //     items[index].id!,
-                                                        //     favrtS);
-                                                        tappedIndex =
-                                                            index;
-                                                        favorite.toggle();
-                                                        print(items[index]
-                                                            .fvrt);
-                                                        print(favrtS);
-                                                            },
-                                                            child: Icon(
-                                                        Icons.favorite,
-                                                        color: wordClass
-                                                                    .fvrt ==
-                                                                0
-                                                            ? Colors.grey
-                                                            : Colors.red,
-                                                            ),
-                                                          ),
-                                                      ],
+                                                      // favrtFunction(
+                                                      //     index);
+                                                      // setState(() {});
+                                                      // String tmpFvrt =
+                                                      //     favrtS.toString();
+                                                      // gredb.update(
+                                                      //     items[index].id!,
+                                                      //     favrtS);
+                                                      tappedIndex = index;
+                                                      favorite.toggle();
+                                                      print(items[index]
+                                                          .fvrt);
+                                                      print(favrtS);
+                                                    },
+                                                    child: Icon(
+                                                      Icons.favorite,
+                                                      color: wordClass
+                                                          .fvrt ==
+                                                          0
+                                                          ? Colors.grey
+                                                          : Colors.red,
                                                     ),
                                                   ),
-                                                ),
+                                                ],
                                               ),
-                                            )),
-                                      );
-                                    }),
-                              );
-                            } else {
-                              return const Text('Empty data');
-                            }
-                          } else {
-                            return Text('State: ${snapshot.connectionState}');
-                          }
-                        },
-                      )
+                                            ),
+                                          ),
+                                        ),
+                                      )),
+                                );
+                              }),
+                        );
+                      } else {
+                        return const Text('Empty data');
+                      }
+                    } else {
+                      return Text('State: ${snapshot.connectionState}');
+                    }
+                  },
+                )
                     : const Center(
-                        child: CircularProgressIndicator(),
-                      )),
+                  child: CircularProgressIndicator(),
+                )),
           ),
         ],
       ),

@@ -72,5 +72,7 @@ class WordClass {
     return data;
   }
 
+  void forEach(Function(dynamic key, dynamic value) param0) {}
+
 
 }
