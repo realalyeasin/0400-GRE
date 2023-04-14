@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:final_project/database/db_helpers.dart';
 import 'package:final_project/views/flash_card.dart';
@@ -21,6 +22,7 @@ class ReadCSV extends StatefulWidget {
 
 class _ReadCSVState extends State<ReadCSV> {
   final gredb = GREDatabase();
+  late StreamController _wordController;
 
   List<WordClass> items = [];
   List<List<dynamic>> data = [];
@@ -32,62 +34,66 @@ class _ReadCSVState extends State<ReadCSV> {
   var a = 'unperspective'.obs;
   var p = 'adj'.obs;
   var f = 5.obs;
-  bool isFav = false;
+  RxBool isFav = false.obs;
   var isSelected = false;
-  var loadDone = false.obs;
-  var favorite = false.obs;
+  RxBool loadDone = false.obs;
+  RxBool favorite = false.obs;
   var check = 0;
+  Rx<WordClass> myTabWord = WordClass().obs;
   var favrtS = 0;
   var tappedIndex = -100.obs;
-  var listIndex = false.obs;
-  var tappedListIndex = 0;
+  RxBool listIndex = false.obs;
+  RxInt tappedListIndex = 0.obs;
   // the selected value
-  @override
-  initState() {
-    // ignore: avoid_print
-    print("initState Called");
 
-    loadAsset();
-    //createDB();
-    ReadJSON();
-    readJson();
-    loadJsonData();
-    print('Loaded');
-  }
+  Future fetchDataFromDB() => fetchWordsFromDB();
 
-  loadJsonData() async {
-    List<WordClass> wordClass = await ReadJSON();
-    print('111');
-    print(wordClass[3].meaning);
-    return wordClass;
-  }
-
-  Future<void> readJson() async {
-    final String response =
-    await rootBundle.rootBundle.loadString('assets/wordjson.json');
-    final data = await json.decode(response);
-
-    dbHelper.queryRowCount().then((value) => {
-      print(value),
-      if (value == 0)
-        {
-          setState(() {
-            items = List<WordClass>.from(data.map((e) {
-              insertDataToDB(WordClass.fromJson(e));
-              return WordClass.fromJson(e);
-            }));
-          })
-        }
-      else
-        {}
+  streamWords() async {
+    fetchDataFromDB().then((res) async {
+      _wordController.add(res);
+      return res;
     });
+  }
 
-    // setState(() {
-    //   items = List<WordClass>.from(data.map((e) {
-    //     insertDataToDB(WordClass.fromJson(e));
-    //     return WordClass.fromJson(e);
-    //   }));
-    // });
+  showSnack() {
+    return ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        backgroundColor: Colors.greenAccent,
+        content: Text(
+          'Updated',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        )));
+  }
+
+  Future<void> _handleRefresh() async {
+    fetchDataFromDB().then((res) async {
+      _wordController.add(res);
+      // showSnack();
+      return null;
+    });
+  }
+
+  Future readJson() async {
+    final String response =
+        await rootBundle.rootBundle.loadString('assets/wordjson.json');
+    final data = await json.decode(response);
+    await dbHelper.queryRowCount().then((value) => {
+          if (value == 0)
+            {
+              List<WordClass>.from(data.map((e) {
+                insertDataToDB(WordClass.fromJson(e));
+                return WordClass.fromJson(e);
+              })),
+            }
+          else
+            {}
+        });
+    return List<WordClass>.from(data.map((e) {
+      return WordClass.fromJson(e);
+    }));
   }
 
   var readData = false;
@@ -97,80 +103,21 @@ class _ReadCSVState extends State<ReadCSV> {
     });
   }
 
-  // favrtFunction(int? index) {
-  //   WordClass data = items[index!];
-  //   if (items[index].fvrt == 1) {
-  //     data.fvrt = 0;
-  //     print(data.fvrt);
-  //     print('Not Favorated -- ');
-  //     gredb.update(items[index].id!, data);
-  //
-  //     print(items[index].fvrt);
-  //   } else {
-  //     data.fvrt = 1;
-  //     print(data.fvrt);
-  //     print(' Favorated -- ');
-  //     gredb.update(items[index].id!, data);
-  //     print(items[index].fvrt);
-  //   }
-  //   setState(() {});
-  //   gredb.getData();
-  // }
-
-  Future fetchDataFromDB() => fetchWordsFromDB();
-
-  loadAsset() async {
-    final myData = await rootBundle.rootBundle.loadString("assets/word.csv");
-    List<List<dynamic>> csvTable = const CsvToListConverter().convert(myData);
-    data = csvTable;
-    //print(data);
-    loadDoneCheck();
-  }
-
   loadDoneCheck() {
     loadDone.toggle();
   }
 
-  // createDB() async {
-  //   Database database = await openDatabase(data as String, version: 1,
-  //       onCreate: (Database db, int version) async {
-  //     var words = 'words';
-  //     await db.execute("""CREATE TABLE $words(
-  //       id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  //       word TEXT,
-  //       meaning TEXT,
-  //       example TEXT,
-  //       syn TEXT,
-  //       ant TEXT,
-  //       pos TEXT,
-  //       freq INTEGER,
-  //       fvrt INTEGER)""");
-  //
-  //     Batch batch = db.batch();
-  //     final wordJson =
-  //         await rootBundle.rootBundle.loadString('assets/wordjson.json');
-  //     final wordList = json.decode(wordJson) as List<dynamic>;
-  //     wordList.forEach((val) {
-  //       WordClass word = WordClass.fromMap(val);
-  //       batch.insert(words, word.toMap());
-  //       print(wordList);
-  //
-  //       print('WORDLIST');
-  //     });
-  //
-  //     batch.commit();
-  //   });
-  // }
-
-  Future<List<WordClass>> ReadJSON() async {
-    final jsonData =
-    await rootBundle.rootBundle.loadString('assets/wordjson.json');
-    final list = jsonDecode(jsonData) as List<dynamic>;
-    // print(list);
-    print("////////////////");
-    return list.map((e) => WordClass.fromJson(e)).toList();
+  @override
+  initState() {
+    super.initState();
+    _wordController = StreamController();
+    readJson().then((value) {
+      myTabWord(value[0]);
+      streamWords();
+    });
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(255, 251, 245, 1),
@@ -202,97 +149,95 @@ class _ReadCSVState extends State<ReadCSV> {
                 height: 2,
               ),
             ),
-            Container(
-              child: Column(
-                children: [
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  GestureDetector(
-                      onTap: () {
-                        Get.offAll(ReadCSV());
-                      },
-                      child: const Text(
-                        'All Words',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            letterSpacing: 1,
-                            fontStyle: FontStyle.italic),
-                      )),
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  GestureDetector(
-                      onTap: () {
-                        Get.to(() => const HighFrequencyWords());
-                      },
-                      child: const Text(
-                        'Frequency Level Words',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            letterSpacing: 1,
-                            fontStyle: FontStyle.italic),
-                      )),
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  GestureDetector(
-                      onTap: () {
-                        Get.to(() => const FlashCard());
-                      },
-                      child: const Text(
-                        'Flash Card',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            letterSpacing: 1,
-                            fontStyle: FontStyle.italic),
-                      )),
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  GestureDetector(
-                      onTap: () {
-                        Get.to(() => const FavoriteWords());
-                      },
-                      child: const Text(
-                        'Favorite Words',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            letterSpacing: 1,
-                            fontStyle: FontStyle.italic),
-                      )),
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  GestureDetector(
-                      onTap: () {},
-                      child: const Text(
-                        'Feedback',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            letterSpacing: 1,
-                            fontStyle: FontStyle.italic),
-                      )),
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  GestureDetector(
-                      onTap: () {},
-                      child: const Text(
-                        'Contact Us',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            letterSpacing: 1,
-                            fontStyle: FontStyle.italic),
-                      )),
-                ],
-              ),
+            Column(
+              children: [
+                const SizedBox(
+                  height: 15,
+                ),
+                GestureDetector(
+                    onTap: () {
+                      Get.offAll(ReadCSV());
+                    },
+                    child: const Text(
+                      'All Words',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          letterSpacing: 1,
+                          fontStyle: FontStyle.italic),
+                    )),
+                const SizedBox(
+                  height: 15,
+                ),
+                GestureDetector(
+                    onTap: () {
+                      Get.to(() => const HighFrequencyWords());
+                    },
+                    child: const Text(
+                      'Frequency Level Words',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          letterSpacing: 1,
+                          fontStyle: FontStyle.italic),
+                    )),
+                const SizedBox(
+                  height: 15,
+                ),
+                GestureDetector(
+                    onTap: () {
+                      Get.to(() => const FlashCard());
+                    },
+                    child: const Text(
+                      'Flash Card',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          letterSpacing: 1,
+                          fontStyle: FontStyle.italic),
+                    )),
+                const SizedBox(
+                  height: 15,
+                ),
+                GestureDetector(
+                    onTap: () {
+                      Get.to(() => const FavoriteWords());
+                    },
+                    child: const Text(
+                      'Favorite Words',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          letterSpacing: 1,
+                          fontStyle: FontStyle.italic),
+                    )),
+                const SizedBox(
+                  height: 15,
+                ),
+                GestureDetector(
+                    onTap: () {},
+                    child: const Text(
+                      'Feedback',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          letterSpacing: 1,
+                          fontStyle: FontStyle.italic),
+                    )),
+                const SizedBox(
+                  height: 15,
+                ),
+                GestureDetector(
+                    onTap: () {},
+                    child: const Text(
+                      'Contact Us',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          letterSpacing: 1,
+                          fontStyle: FontStyle.italic),
+                    )),
+              ],
             ),
           ],
         ),
@@ -315,389 +260,268 @@ class _ReadCSVState extends State<ReadCSV> {
                     .push(MaterialPageRoute(builder: (_) => SearchPage())),
                 icon: const Icon(Icons.search))
           ]),
-      body: Column(
-        children: [
-          Obx(() => loadDone.isTrue
-              ? Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Container(
-              height: 190,
-              width: 400,
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black, width: 3),
-                  color: const Color.fromRGBO(126, 212, 230, 1),
-                  borderRadius: BorderRadius.circular(8)),
-              child: Column(
-                children: [
-                  Obx(
-                        () => Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Padding(
-                          padding:
-                          const EdgeInsets.only(left: 10, top: 5),
-                          child: Row(
-                            children: [
-                              Text(
-                                w.toString(),
-                                style: const TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic),
-                              ),
-                              const Text(
-                                " (",
-                                style: TextStyle(fontSize: 19),
-                              ),
-                              Text(
-                                p.toString(),
-                                style: const TextStyle(fontSize: 17),
-                              ),
-                              const Text(
-                                ")",
-                                style: TextStyle(fontSize: 19),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding:
-                          const EdgeInsets.only(right: 5, top: 5),
-                          child: Row(
-                            children: [
-                              StarScore(
-                                score: f.value.toDouble(),
-                                star: Star(
-                                    fillColor: Colors.black,
-                                    emptyColor:
-                                    Colors.black.withAlpha(88)),
-                              ),
-                              // Text('Frequency:',
-                              //     style: const TextStyle(fontSize: 17)),
-                              // Text(
-                              //   items[inx.value].freq.toString(),
-                              //   style: const TextStyle(fontSize: 17),
-                              // ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
+      body: SingleChildScrollView(
+        child: StreamBuilder(
+          stream: _wordController.stream,
+          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+                return const Center(
+                  child: Text('No Data'),
+                );
+              case ConnectionState.waiting:
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 80.0),
+                    child: CircularProgressIndicator(),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8, top: 3),
-                    child: Row(
-                      children: [
-                        const Text(' - ',
-                            style: TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.w500)),
-                        Text(
-                          m.toString(),
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8, top: 4),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            e.toString(),
-                            maxLines: 3,
-                            softWrap: true,
-                            style: const TextStyle(fontSize: 19),
-                            textAlign: TextAlign.start,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8, top: 10),
-                    child: Row(
-                      children: [
-                        const Text(
-                          'Synonyms: ',
-                          style: const TextStyle(fontSize: 17),
-                        ),
-                        Text(
-                          s.toString(),
-                          style: const TextStyle(fontSize: 17),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8, top: 4),
-                    child: Row(
-                      children: [
-                        const Text(
-                          'Antonyms: ',
-                          style: const TextStyle(fontSize: 17),
-                        ),
-                        Text(
-                          a.toString(),
-                          style: const TextStyle(fontSize: 17),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
-              : Container()),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              color: Colors.black,
-              height: 2,
-            ),
-          ),
-          Obx(
-                () => SingleChildScrollView(
-                child: loadDone.isTrue
-                    ? FutureBuilder(
-                  future: fetchDataFromDB(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<dynamic> snapshot) {
-                    if (snapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Center(child: Text(''));
-                    } else if (snapshot.connectionState ==
-                        ConnectionState.done) {
-                      if (snapshot.hasError) {
-                        return Text('Error Occurred $snapshot.error');
-                      } else if (snapshot.hasData) {
-                        return SizedBox(
-                          height:
-                          MediaQuery.of(context).size.height - 320,
-                          child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (_, index) {
-                                final wordData = snapshot.data[index];
+                );
+              case ConnectionState.active:
 
-                                var map = <String, dynamic>{};
-                                wordData.forEach(
-                                        (key, value) => map[key] = value);
+              case ConnectionState.done:
+                return Obx(
+                  () => Column(
+                    children: [
+                      wordDetails(wordClass: myTabWord.value),
+                      const Divider(thickness: 3),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height - 320,
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: snapshot.data.length,
+                            itemBuilder: (_, index) {
+                              final wordData = snapshot.data[index];
 
-                                WordClass wordClass =
-                                WordClass.fromJson(map);
+                              var map = <String, dynamic>{};
+                              wordData
+                                  .forEach((key, value) => map[key] = value);
 
-                                return SizedBox(
+                              WordClass wordClass = WordClass.fromJson(map);
+
+                              return SizedBox(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    tappedListIndex(index);
+                                    myTabWord(wordClass);
+                                  },
                                   child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 10,
-                                          right: 10,
-                                          top: 8,
-                                          bottom: 8),
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            w = RxString(wordClass.word
-                                                .toString());
-                                            m = RxString(wordClass.meaning
-                                                .toString());
-                                            e = RxString(wordClass.example
-                                                .toString());
-                                            a = RxString(
-                                                wordClass.ant.toString());
-                                            s = RxString(
-                                                wordClass.syn.toString());
-                                            p = RxString(
-                                                wordClass.pos.toString());
-                                            int ff =
-                                            int.parse(wordClass.freq);
-                                            f = RxInt(ff);
-                                            inx = index.obs;
-                                            tappedListIndex = index;
-                                            // print(inx);
-                                            // print(items[inx.value]
-                                            //     .meaning
-                                            //     .toString());
-                                          });
-                                        },
-                                        child: Container(
-                                          height: 55,
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: Colors.black,
-                                                  width: 3),
-                                              color: tappedListIndex ==
-                                                  index
-                                                  ? const Color.fromRGBO(
+                                    padding: const EdgeInsets.only(
+                                        left: 10, right: 10, top: 8, bottom: 8),
+                                    child: Container(
+                                      height: 55,
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: Colors.black, width: 3),
+                                          color: tappedListIndex.value == index
+                                              ? const Color.fromRGBO(
                                                   126, 212, 230, 1)
-                                                  : Colors.yellowAccent
-                                                  .shade700,
-                                              borderRadius:
-                                              BorderRadius.circular(
-                                                  8)),
-                                          // color: isSelected
-                                          //     ? Colors.cyan
-                                          //     : Colors.lightGreen,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              w = RxString(wordClass.word
-                                                  .toString());
-                                              m = RxString(wordClass
-                                                  .meaning
-                                                  .toString());
-                                              e = RxString(wordClass
-                                                  .example
-                                                  .toString());
-                                              a = RxString(wordClass.ant
-                                                  .toString());
-                                              s = RxString(wordClass.syn
-                                                  .toString());
-                                              p = RxString(wordClass.pos
-                                                  .toString());
-                                              int ff = int.parse(
-                                                  wordClass.freq);
-                                              f = RxInt(ff);
-                                              isSelected = true;
-                                              setState(() {
-                                                inx = index.obs;
-                                                tappedListIndex = index;
-                                                // print(inx);
-                                                // print(items[inx.value]
-                                                //     .word
-                                                //     .toString());
-                                              });
-                                            },
-                                            child: Padding(
-                                              padding:
-                                              const EdgeInsets.all(
-                                                  8.0),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                MainAxisAlignment
-                                                    .spaceBetween,
-                                                children: [
-                                                  Container(
-                                                    width: 20,
+                                              : Colors.yellowAccent.shade700,
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      // color: isSelected
+                                      //     ? Colors.cyan
+                                      //     : Colors.lightGreen,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Container(width: 20),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  wordClass.word as String,
+                                                  style: const TextStyle(
+                                                      fontSize: 17,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                                const Text("  --  "),
+                                                Container(
+                                                  width: 5,
+                                                ),
+                                                SizedBox(
+                                                  width: 120,
+                                                  child: Text(
+                                                    wordClass.meaning
+                                                        .toString(),
+                                                    maxLines:
+                                                        1, // Don't wrap at all
+                                                    softWrap:
+                                                        false, // Don't wrap at soft breaks
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.w500),
                                                   ),
-                                                  Row(
-                                                    children: [
-                                                      Text(
-                                                        wordClass.word
-                                                        as String,
-                                                        style: const TextStyle(
-                                                            fontSize: 17,
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .w500),
-                                                      ),
-                                                      const Text(
-                                                          "  --  "),
-                                                      Container(
-                                                        width: 5,
-                                                      ),
-                                                      SizedBox(
-                                                        width: 120,
-                                                        child: Text(
-                                                          wordClass
-                                                              .meaning
-                                                              .toString(),
-                                                          maxLines:
-                                                          1, // Don't wrap at all
-                                                          softWrap:
-                                                          false, // Don't wrap at soft breaks
-                                                          overflow:
-                                                          TextOverflow
-                                                              .ellipsis,
-                                                          style: const TextStyle(
-                                                              fontSize:
-                                                              17,
-                                                              fontWeight:
-                                                              FontWeight
-                                                                  .w500),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        isFav = !isFav;
-                                                        update(wordClass,
-                                                            isFav);
-                                                      });
+                                                ),
+                                              ],
+                                            ),
+                                            GestureDetector(
+                                              onTap: () {
+                                                isFav.value = !isFav.value;
+                                                update(wordClass, isFav.value);
+                                                _handleRefresh();
 
-                                                      // Constants.favWords
-                                                      //     .add(
-                                                      //         WordClass(
-                                                      //   id: wordData.id,
-                                                      //   word: wordData
-                                                      //       .word,
-                                                      //   meaning: wordData
-                                                      //       .meaning,
-                                                      //   example: wordData
-                                                      //       .example,
-                                                      //   syn: wordData
-                                                      //       .syn,
-                                                      //   ant: wordData
-                                                      //       .ant,
-                                                      //   pos: wordData
-                                                      //       .pos,
-                                                      //   freq: wordData
-                                                      //       .freq,
-                                                      //   fvrt: wordData
-                                                      //       .fvrt,
-                                                      // ));
-
-                                                      //gredb.getData();
-
-                                                      // favrtFunction(
-                                                      //     index);
-                                                      // setState(() {});
-                                                      // String tmpFvrt =
-                                                      //     favrtS.toString();
-                                                      // gredb.update(
-                                                      //     items[index].id!,
-                                                      //     favrtS);
-                                                      tappedIndex = index;
-                                                      favorite.toggle();
-                                                      print(items[index]
-                                                          .fvrt);
-                                                      print(favrtS);
-                                                    },
-                                                    child: Icon(
-                                                      Icons.favorite,
-                                                      color: wordClass
-                                                          .fvrt ==
-                                                          0
-                                                          ? Colors.grey
-                                                          : Colors.red,
-                                                    ),
-                                                  ),
-                                                ],
+                                                //tappedIndex = index;
+                                                // favorite.toggle();
+                                              },
+                                              child: Icon(
+                                                Icons.favorite,
+                                                color: wordClass.fvrt == 0
+                                                    ? Colors.grey
+                                                    : Colors.red,
                                               ),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                      )),
-                                );
-                              }),
-                        );
-                      } else {
-                        return const Text('Empty data');
-                      }
-                    } else {
-                      return Text('State: ${snapshot.connectionState}');
-                    }
-                  },
-                )
-                    : const Center(
-                  child: CircularProgressIndicator(),
-                )),
-          ),
-        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                      ),
+                    ],
+                  ),
+                );
+            }
+          },
+        ),
       ),
     );
   }
+}
+
+Widget wordDetails({required WordClass wordClass}) {
+  return Padding(
+    padding: const EdgeInsets.all(12.0),
+    child: Container(
+      height: 190,
+      width: 400,
+      decoration: BoxDecoration(
+          border: Border.all(color: Colors.black, width: 3),
+          color: const Color.fromRGBO(126, 212, 230, 1),
+          borderRadius: BorderRadius.circular(8)),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 10, top: 5),
+                child: Row(
+                  children: [
+                    Text(
+                      '${wordClass.word}',
+                      style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.italic),
+                    ),
+                    const Text(
+                      " (",
+                      style: TextStyle(fontSize: 19),
+                    ),
+                    Text(
+                      '${wordClass.pos}',
+                      style: const TextStyle(fontSize: 17),
+                    ),
+                    const Text(
+                      ")",
+                      style: TextStyle(fontSize: 19),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 5, top: 5),
+                child: Row(
+                  children: [
+                    if (wordClass.freq != null)
+                      StarScore(
+                        score: double.parse(wordClass.freq.toString()),
+                        star: Star(
+                            fillColor: Colors.black,
+                            emptyColor: Colors.black.withAlpha(88)),
+                      ),
+                    // Text('Frequency:',
+                    //     style: const TextStyle(fontSize: 17)),
+                    // Text(
+                    //   items[inx.value].freq.toString(),
+                    //   style: const TextStyle(fontSize: 17),
+                    // ),
+                  ],
+                ),
+              )
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 3),
+            child: Row(
+              children: [
+                const Text(' - ',
+                    style:
+                        TextStyle(fontSize: 19, fontWeight: FontWeight.w500)),
+                Text(
+                  '${wordClass.meaning}',
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Example: ${wordClass.example}',
+                    maxLines: 3,
+                    softWrap: true,
+                    style: const TextStyle(fontSize: 19),
+                    textAlign: TextAlign.start,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 10),
+            child: Row(
+              children: [
+                const Text(
+                  'Synonyms: ',
+                  style: TextStyle(fontSize: 17),
+                ),
+                Text(
+                  '${wordClass.syn}',
+                  style: const TextStyle(fontSize: 17),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 4),
+            child: Row(
+              children: [
+                const Text(
+                  'Antonyms: ',
+                  style: TextStyle(fontSize: 17),
+                ),
+                Text(
+                  '${wordClass.ant}',
+                  style: const TextStyle(fontSize: 17),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
