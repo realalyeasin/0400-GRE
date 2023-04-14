@@ -46,7 +46,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   get:
-  sqflite: ^2.2.6
+  sqflite:
   path_provider:
   intl:
   csv:
