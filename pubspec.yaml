@@ -56,6 +56,7 @@ dev_dependencies:
   dotted_line:
   flutter_star: ^1.2.0
   flutter_expand_view: ^1.6.2
+  shared_preferences:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
